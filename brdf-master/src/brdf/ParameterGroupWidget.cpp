@@ -254,9 +254,9 @@ if(dosomething==true)
  brdf=mb;
     brdf->var = new float[5];
    for(int i=0;i<5;i++)  brdf->var[i]=temp[i];
+          brdf->wasProjected =true;
         
         
-        return brdf;
 
 }
     // if this isn't visible, then don't send back a BRDF
@@ -265,22 +265,13 @@ if(dosomething==true)
        if( pcaCheckBox && !pcaCheckBox->isChecked() && brdf->wasProjected )
        {
        // this->reloadButtonPushed();
-            BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
-       mb->loadMERLData(brdf->getName().c_str());
-    
-   cout<<mb->brdfData[0]<<endl;
- 
-    brdf = mb;
-
-
-    
-        brdf->wasProjected =true;
+         
 
     // now redraw
   //  paramChanged();
      
        }
-    if( pcaCheckBox && pcaCheckBox->isChecked() && !brdf->wasProjected )
+    if( pcaCheckBox->isChecked() && !brdf->wasProjected )
     
     {
       std::cerr<<brdf->getName().c_str()<<std::endl;
