@@ -138,15 +138,15 @@ bool read_brdf( const char* filename )
     return true;
 }
 
-float*  reshape(bool* MaskMap,int mask_size,int Qsize, float* my_npy)
+float*  reshape(double* CosineMap, bool* MaskMap,int mask_size,int Qsize, float* my_npy)
 {
     float* result = new float[Qsize*3];
     int ind = 0;
     for(int i=0; i<mask_size;i++)
         if(MaskMap[i]) {
-            result[ind*3 + 0] = my_npy[i*3+0];
-            result[ind*3 + 1] = my_npy[i*3+1];
-            result[ind*3 + 2] = my_npy[i*3+2];
+            result[ind*3 + 0] = my_npy[i*3+0]*CosineMap[ind];
+            result[ind*3 + 1] = my_npy[i*3+1]*CosineMap[ind];
+            result[ind*3 + 2] = my_npy[i*3+2]*CosineMap[ind];
             ind++;
         }
     
@@ -163,7 +163,7 @@ void  MapBRDF(float* reshapedBRDF,float* median,int Qsize )
      }
 }
 
-void UnmapBRDF(float* mappedData,bool* MaskMap,float* median,int mask_size)
+void UnmapBRDF(double* CosineMap,float* mappedData,bool* MaskMap,float* median,int mask_size)
 
 {
     int ind = 0;
@@ -173,7 +173,11 @@ void UnmapBRDF(float* mappedData,bool* MaskMap,float* median,int mask_size)
          brdfData[i*3+0]=exp(mappedData[ind*3+0])*(median[ind]+0.001)-0.001;
          brdfData[i*3+1]=exp(mappedData[ind*3+1])*(median[ind]+0.001)-0.001;
          brdfData[i*3+2]=exp(mappedData[ind*3+2])*(median[ind]+0.001)-0.001;
-         ind++;
+        
+          brdfData[i*3+0]/=CosineMap[ind];
+          brdfData[i*3+1]/=CosineMap[ind];
+          brdfData[i*3+2]/=CosineMap[ind];
+             ind++;
     }
      else
          brdfData[i*3 + 0] = brdfData[i*3 + 1]=brdfData[i*3 + 2]=-1.0 ;
@@ -264,15 +268,21 @@ int main(int argc, char *argv[])
 
           my_npy = cnpy::npy_load("Q.npy");
            cout<<"ScaledEigenvectors shape "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
-
-
-
           float* Q  = reinterpret_cast<float*>(my_npy.data);
-          float* reshapedBRDF = reshape(MaskMap,mask_size,Qsize,brdfData);
+          
+          my_npy = cnpy::npy_load("CosineMap.npy");
+           cout<<"CosineMap "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
+          double* CosineMap  = reinterpret_cast<double*>(my_npy.data);
+          
+      
+          float* reshapedBRDF = reshape(CosineMap,MaskMap,mask_size,Qsize,brdfData);
 
           my_npy = cnpy::npy_load("RelativeOffset.npy");
            cout<<"RelativeOffset "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
           float* RelativeOffset  = reinterpret_cast<float*>(my_npy.data);
+           
+   
+          
 
           MapBRDF(reshapedBRDF,median,Qsize);
 
@@ -280,8 +290,7 @@ int main(int argc, char *argv[])
 
            ProjectToPCSpace(reshapedBRDF,Q,RelativeOffset,Qsize);
 
-
-          UnmapBRDF(reshapedBRDF,MaskMap,median,mask_size);
+          UnmapBRDF(CosineMap,reshapedBRDF,MaskMap,median,mask_size);
           //for(int i=0;i<12;i++)
          // cout<<brdfData[i]<<endl;
 

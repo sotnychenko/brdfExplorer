@@ -39,7 +39,8 @@ for i in range(0,len(materials)):
 #print(b.shape)
 #print(b)
 
-MERLIds = range(90*90*180)
+MERLIds = np.arange(90*90*180)
+MERLIds = MERLIds.astype(int)
 dataDir = "data/"
 
 ##############################################################################################################
@@ -47,9 +48,9 @@ dataDir = "data/"
 ##############################################################################################################
 maskMap = np.load('%s/MaskMap.npy'%dataDir)	  #Indicating valid regions in MERL BRDFs
 median = np.load('%s/Median.npy'%dataDir)	  #Median, learned from trainingdata
-#cosMap = np.load('%s/CosineMap.npy'%dataDir)  #Precomputed cosine-term for all BRDF locations (ids)
+cosMap = np.load('%s/CosineMap.npy'%dataDir)  #Precomputed cosine-term for all BRDF locations (ids)
 VsU = np.load('%s/VsU.npy'%dataDir)	  #Usv, precomputed pca space for 5 components
-cosMap = None
+
 relativeOffset = np.load('%s/RelativeOffset.npy'%dataDir) #Offset, learned from trainingdata
 Q = np.load('%s/Q.npy'%dataDir) #Scaled eigenvectors, learned from trainingdata
 
@@ -57,12 +58,22 @@ Q = np.load('%s/Q.npy'%dataDir) #Scaled eigenvectors, learned from trainingdata
 #COMPUTE THE PROJECTION
 ##############################################################################################################
 #Choose which Ids are valid by checking the maskMap
+
+if(MERLIds.dtype != bool):
+	sortKeys = np.argsort(MERLIds)	#Sort data so it matches logical indices
+	obs = obs[sortKeys]
+	MERLIds = MERLIds[sortKeys]
 mappedKnownSelector = np.zeros(np.shape(maskMap))	#Create a selector for the mapped version
 mappedKnownSelector[MERLIds] = 1
 mappedKnownSelector = mappedKnownSelector[maskMap].astype(bool)
-
+obs = obs[maskMap]
+MERLIds = MERLIds[maskMap]
+print(type(cosMap))
+if(cosMap is not None):
+	obs *= cosMap[mappedKnownSelector]
 #Map the BRDF with their logarithmic mapping
 mapped = MapBRDF(obs, maskMap[MERLIds], median[mappedKnownSelector])
+
 #print(mapped.shape)
 #Project BRDF to the PCA space
 #Note that in the ProjectToPCSpace function they have eta but it has no effect if it's 0 
@@ -86,11 +97,19 @@ nPCs = 5;
 #Perform editions over the projections
 #proj[0,:] *= 0;
 
+#print(proj[0,:].shape)
 #Get the BRDF back from PCA basis to the original space
 recon = np.dot(Q[:,0:nPCs],proj)+relativeOffset
 
+
+
+
 #Unmap the bRDF from their logarithmic mapping
-unm = UnmapBRDF(recon, maskMap, median)
+if(cosMap is None):
+	unm = UnmapBRDF(recon, maskMap, median)
+else:
+	unm = UnmapBRDF(recon, maskMap, median)
+	unm[maskMap] /= cosMap
 
 #Save the BRDF 
 saveMERLBRDF('%s/outputName.binary'%OutputDir,unm)
