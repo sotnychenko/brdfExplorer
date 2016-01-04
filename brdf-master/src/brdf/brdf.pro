@@ -111,7 +111,7 @@ win32 {
 DEFINES += GLEW_STATIC
  INCLUDEPATH += C:\sotnychenko\mpii\dependencies\include\
  INCLUDEPATH += C:\sotnychenko\mpii\dependencies\bin\
- INCLUDEPATH += "C:\Program Files (x86)\Eigen\include"
+ INCLUDEPATH += C:\sotnychenko\mpii\dependencies\Eigen\include"
  LIBS +=C:\Qt\4.8.6\lib\libQtOpenGL4.a
  LIBS +=C:\Qt\4.8.6\lib\libQtGui4.a
  LIBS +=C:\Qt\4.8.6\lib\libQtCore4.a
