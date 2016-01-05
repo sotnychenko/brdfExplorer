@@ -109,15 +109,13 @@ linux-mingw32-custom{
 
 win32 {
 DEFINES += GLEW_STATIC
- INCLUDEPATH += C:\sotnychenko\mpii\dependencies\include\
- INCLUDEPATH += C:\sotnychenko\mpii\dependencies\bin\
- INCLUDEPATH += C:\sotnychenko\mpii\dependencies\Eigen\include"
- LIBS +=C:\Qt\4.8.6\lib\libQtOpenGL4.a
- LIBS +=C:\Qt\4.8.6\lib\libQtGui4.a
- LIBS +=C:\Qt\4.8.6\lib\libQtCore4.a
- LIBS += C:\sotnychenko\mpii\dependencies\lib\glut32.lib
- LIBS += C:\sotnychenko\mpii\dependencies\lib\libglew32.dll.a
-
-
+ INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\include\
+ INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\bin\
+ INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\Eigen\include\
+ LIBS += C:\Users\osotnych\Downloads\qt-everywhere-opensource-src-4.8.6\qt-everywhere-opensource-src-4.8.6\lib\QtOpenGL4.lib
+ LIBS += C:\Users\osotnych\Downloads\qt-everywhere-opensource-src-4.8.6\qt-everywhere-opensource-src-4.8.6\lib\QtGui4.lib
+ LIBS += C:\Users\osotnych\Downloads\qt-everywhere-opensource-src-4.8.6\qt-everywhere-opensource-src-4.8.6\lib\QtCore4.lib
+ LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\glut32.lib
+ LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\glew32s.lib
 
 }
