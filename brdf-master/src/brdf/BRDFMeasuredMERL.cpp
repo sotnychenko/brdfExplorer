@@ -383,6 +383,7 @@ void  BRDFMeasuredMERL::UnmapBRDF(double* CosineMap,float* mappedData,bool* Mask
     }
      else
          brdfData[i*3 + 0] = brdfData[i*3 + 1]=brdfData[i*3 + 2]=-1.0 ;
+         free(mappedData);
 
 }
 
@@ -425,21 +426,24 @@ void  BRDFMeasuredMERL::ProjectToPCSpace(float* data,float* PCs,float* relativeO
        Sinv.setZero();
        for(int i=0; i<numC; i++) Sinv(i,i) = SVD.singularValues()[i]/( SVD.singularValues()[i]* SVD.singularValues()[i]);
 
-         MatrixXf proj = V*Sinv*Ut*b;
+         MatrixXf project = V*Sinv*Ut*b;
+         
+  
+       brdfParam->Q = A;
+       brdfParam-> proj = project;
          
          
-         for(int i=0; i<proj.cols();i++)
-         for(int j=0; j<proj.rows(); j++)  
-           proj(j,i)*=var[j];
+         for(int i=0; i<project.cols();i++)
+         for(int j=0; j<project.rows(); j++)  
+           project(j,i)*=var[j];
         
         
-         MatrixXf recon =  A*proj;
+         MatrixXf recon =  A*project;
          
          
          
-         Q = A;
-         proj = V*Sinv*Ut*b;
-         rellOff= relativeOffset;
+       
+        
 
          for(int i=0; i<Qsize;i++)
              for(int j=0;j<3;j++)
@@ -447,13 +451,52 @@ void  BRDFMeasuredMERL::ProjectToPCSpace(float* data,float* PCs,float* relativeO
 
 
 
+}
+float*  BRDFMeasuredMERL::ProjectToPCSpaceShort(float* var)
 
+{
 
+    
+         MatrixXf proj=  brdfParam->proj;
+         
+         for(int i=0; i< brdfParam->proj.cols();i++)
+         for(int j=0; j< brdfParam->proj.rows(); j++)  
+               proj(j,i)*=var[j];
+        
+        
+         MatrixXf recon =   brdfParam->Q*proj;
+         
+   
 
+       float* data = new float[ brdfParam->Qsize * 3 ];
+   
+          brdfData = new float[ numBRDFSamples * 3 ];
+
+         for(int i=0; i<brdfParam->Qsize;i++)
+             for(int j=0;j<3;j++)
+                 data[i*3+j]= recon(i,j)+brdfParam->RelativeOffset[i];
+
+return data;
 }
 
 
 
+void BRDFMeasuredMERL::projectShort(int numBRDFsam,const char *filename,float* var)
+{
+  
+         name = std::string(filename);
+         numBRDFSamples = numBRDFsam;
+
+
+          float* reshapedBRDF = ProjectToPCSpaceShort(var);
+
+
+          UnmapBRDF(brdfParam->CosineMap,reshapedBRDF,brdfParam->MaskMap,brdfParam->median,brdfParam->mask_size);
+
+           reshapeFinal();
+
+        
+}
 
 void BRDFMeasuredMERL::project(const char *filename,float* var)
 {
@@ -470,7 +513,7 @@ void BRDFMeasuredMERL::project(const char *filename,float* var)
         int Qsize;
 
 
-
+        brdfParam=new brdfMERLparam;
 
 
           cnpy::NpyArray my_npy = cnpy::npy_load("MaskMap.npy");
@@ -478,12 +521,18 @@ void BRDFMeasuredMERL::project(const char *filename,float* var)
           cout<<"mask shape "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
           mask_size = my_npy.shape[0];
           bool* MaskMap = reinterpret_cast<bool*>(my_npy.data);
-
-
+          
+         brdfParam->MaskMap=MaskMap;
+         brdfParam->mask_size=mask_size;
+         
+        
           my_npy = cnpy::npy_load("Median.npy");
            cout<<"median shape "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
           float* median =reinterpret_cast<float*>(my_npy.data);
           Qsize = my_npy.shape[0];
+          brdfParam->median=median;
+          brdfParam->Qsize=Qsize;
+          
 
           my_npy = cnpy::npy_load("Q.npy");
            cout<<"ScaledEigenvectors shape "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
@@ -494,11 +543,15 @@ void BRDFMeasuredMERL::project(const char *filename,float* var)
            cout<<"CosineMap "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
           double* CosineMap  = reinterpret_cast<double*>(my_npy.data);
           
+          brdfParam->CosineMap=CosineMap;
+          
           float* reshapedBRDF = reshape(CosineMap,MaskMap,mask_size,Qsize,brdfData);
 
           my_npy = cnpy::npy_load("RelativeOffset.npy");
            cout<<"RelativeOffset "<<my_npy.shape[0]<<" "<<my_npy.shape[1]<<endl;
           float* RelativeOffset  = reinterpret_cast<float*>(my_npy.data);
+          
+          brdfParam->RelativeOffset=RelativeOffset;
 
           MapBRDF(reshapedBRDF,median,Qsize);
 

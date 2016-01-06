@@ -247,13 +247,19 @@ if(dosomething==true)
         float* temp=new float[5];
     for(int i=0;i<5;i++) temp[i]= brdf->var[i];
          BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
-      mb->project(brdf->getName().c_str(), brdf->var);
+         
+         mb->brdfParam=brdf->brdfParam;
+      mb->projectShort( brdf->numBRDFSamples,brdf->getName().c_str(), brdf->var);
       
  // mb->loadMERLData(brdf->getName().c_str());
       
+  delete brdf;    
  brdf=mb;
+ brdf->numBRDFSamples=mb->numBRDFSamples;
+brdf->brdfParam=mb->brdfParam;
     brdf->var = new float[5];
    for(int i=0;i<5;i++)  brdf->var[i]=temp[i];
+   free(temp);
           brdf->wasProjected =true;
         
         
@@ -306,8 +312,10 @@ if(dosomething==true)
         BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
       mb->project(brdf->getName().c_str(),brdf->var);
  // mb->loadMERLData(brdf->getName().c_str());
-      
+  delete brdf;    
  brdf=mb;
+ brdf->numBRDFSamples=mb->numBRDFSamples;
+brdf->brdfParam=mb->brdfParam;
   brdf->var = new float[5];
   brdf->var[0]=1.0;
   brdf->var[1]=1.0;

@@ -67,10 +67,12 @@ public:
     void ProjectToPCSpace(float* data,float* PCs,float* relativeOffset,int Qsize,float* var);
 
 void project(const char *filename,float* var);
+float* ProjectToPCSpaceShort(float* var);
 
 void UnmapBRDF(double* CosineMap,float* mappedData,bool* MaskMap,float* median,int mask_size);
 
 void  MapBRDF(float* reshapedBRDF,float* median,int Qsize );
+void projectShort(int numBRDFsam,const char *filename,float* var);
 
 float*  reshape(double* CosineMap,bool* MaskMap,int mask_size,int Qsize, float* my_npy);
 
@@ -79,12 +81,11 @@ void allocBRDF();
 void reshapeFinal( );
 void setName(string n);
     float* brdfData;
-     GLuint tbo;
+    GLuint tbo;
     GLuint tex;
         int numBRDFSamples;
-        MatrixXf Q;
-        MatrixXf proj;
-        float* rellOff;
+         brdfMERLparam* brdfParam;
+   
        
 protected:
 

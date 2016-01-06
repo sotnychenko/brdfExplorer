@@ -100,6 +100,17 @@ struct brdfColorParam
     float defaultVal[3];
     float currentVal[3];
 };
+struct brdfMERLparam
+{
+   MatrixXf Q;
+   MatrixXf proj;
+   int mask_size;
+   int Qsize;
+   bool* MaskMap;
+   float* median;
+   double* CosineMap;
+    float* RelativeOffset;
+};
 
 
 struct brdfPackage
@@ -187,6 +198,7 @@ public:
  int numBRDFSamples;
 
  float* var;
+   brdfMERLparam* brdfParam;
 protected:
 
     virtual void addFloatParameter( std::string name, float min, float max, float value );
