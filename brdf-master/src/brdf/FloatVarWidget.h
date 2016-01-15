@@ -87,10 +87,22 @@ public:
         void setMinMax( float min, float max );
         
         void setEnabled( bool e );
-
-
-signals:
-        void valueChanged( float v );
+        void setId(int id);
+        int  getId();
+         float minValue;
+        float maxValue;
+        float defaultValue;
+        bool updatingValue;
+        
+          FloatVarEdit* edit;
+          QSlider* slider;
+         
+         int Id;
+        
+        float sliderToFloat( int x );
+        int floatToSlider( float x );
+   signals:
+        void valueChanged( float v, int id=-1.0 );
 
 private slots:
         void textChanged();
@@ -98,18 +110,13 @@ private slots:
         void setToDefault();
 
 private:
-        float minValue;
-        float maxValue;
-        float defaultValue;
-        bool updatingValue;
-        
-        float sliderToFloat( int x );
-        int floatToSlider( float x );
+       
         
         
         //QComboBox* edit;
-        FloatVarEdit* edit;
-        QSlider* slider;
+       
+      
+      
 };
 
 #endif

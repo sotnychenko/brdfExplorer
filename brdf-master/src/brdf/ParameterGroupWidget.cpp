@@ -47,6 +47,7 @@ infringement.
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <dirent.h>
 #include "ParameterGroupWidget.h"
 #include "FloatVarWidget.h"
 #include "ColorVarWidget.h"
@@ -88,7 +89,7 @@ ParameterGroupWidget::ParameterGroupWidget( ParameterWindow* pWindow, BRDFBase* 
 
     colorIndex = (colorIndex + 1) % NUM_DRAW_COLORS;
 
-dosomething =false;
+    dosomething =false;
 
     // now let's get to the layout
     QVBoxLayout *layout = new QVBoxLayout;
@@ -132,6 +133,11 @@ dosomething =false;
     pcaCheckBox->setChecked( false );
     cmdLayout->addWidget( pcaCheckBox );
     connect( pcaCheckBox, SIGNAL(stateChanged(int)), this, SLOT(paramChanged()) );
+    
+    colorSpaceBox = new QCheckBox( "2nd ver" );
+    colorSpaceBox->setChecked( false );
+    cmdLayout->addWidget( colorSpaceBox );
+    connect( colorSpaceBox, SIGNAL(stateChanged(int)), this, SLOT(paramChanged()) );
    }
 
 
@@ -234,7 +240,72 @@ void ParameterGroupWidget::removeButtonPushed()
 {
 	emit( removeBRDFButtonPushed(this) );
 }
+void ParameterGroupWidget::addAttributeWidgets()
+{
+ FloatVarWidget* fv;
+    
+      DIR *dir;
+      struct dirent *ent;
+      int it=0;
+      if ((dir = opendir ("trained_RBFN_npz\\")) != NULL) {
+         /* print all the files and directories within directory */
+        while ((ent = readdir (dir)) != NULL) {
+       
+    
+          std::string str(ent->d_name);
+    
+           if(str.substr(str.find_last_of(".") + 1) == "npz") {
+      
+   
+    size_t found = str.find("Name_");
+    
+    if(found!=std::string::npos){ 
+     
+     string strNew = str.substr (found,str.size()-1);
+   
+     unsigned first = strNew.find("_");
+     strNew=  strNew.substr (first+1,strNew.size()-1);
+     unsigned last = strNew.find("_");
+       
+       fv = new FloatVarWidget(QString::fromStdString(strNew.substr (0,last)), 0.2, 1.0, 1.0);
+    }
+    else    
+    fv = new FloatVarWidget(QString::number(it), 0.2, 1.0, 1.0);
+    fv->setId(it);
 
+
+    
+    connect(fv, SIGNAL(valueChanged(float,int)), this, SLOT(attrChanged(float,int)));
+    
+    this->layout()->addWidget(fv);
+  
+    cnpy::npz_t my_npz = cnpy::npz_load("trained_RBFN_npz\\"+str);
+   brdf->brdfParam->npzFiles.push_back(my_npz); 
+
+ //   printf ("%s\n", ent->d_name);
+    it++;
+  }
+  
+  }
+  closedir (dir);
+        } else {
+  /* could not open directory */
+  perror ("");
+
+       }
+       
+ 
+  }
+  void  ParameterGroupWidget::updateAttrSliders(brdfMERLparam* brdfParam)
+  {
+ 
+  int offset = this->layout()->count()-brdfParam->npzFiles.size();
+        for(int i=0;i<brdfParam->npzFiles.size();i++)
+      {  
+            FloatVarWidget* w = (FloatVarWidget*)(this->layout()->itemAt(i+offset)->widget());      
+             w->setValue( brdfParam->attrValues[i]);   
+       }
+  }
 
 BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
 {
@@ -242,26 +313,21 @@ BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
 if(dosomething==true)
 {
 
-     //   brdf->wasProjected =false;
+
         dosomething=false;
-        float* temp=new float[5];
-    for(int i=0;i<5;i++) temp[i]= brdf->var[i];
+      
          BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
          
          mb->brdfParam=brdf->brdfParam;
-      mb->projectShort( brdf->numBRDFSamples,brdf->getName().c_str(), brdf->var);
-      
- // mb->loadMERLData(brdf->getName().c_str());
-      
+      mb->projectShort( brdf->numBRDFSamples,brdf->getName().c_str());
+           brdf->wasProjected =false;
+       updateAttrSliders( mb->brdfParam);  
+       
   delete brdf;    
  brdf=mb;
  brdf->numBRDFSamples=mb->numBRDFSamples;
-brdf->brdfParam=mb->brdfParam;
-    brdf->var = new float[5];
-   for(int i=0;i<5;i++)  brdf->var[i]=temp[i];
-   free(temp);
-          brdf->wasProjected =true;
-        
+brdf->brdfParam=mb->brdfParam; 
+ brdf->wasProjected =true;
         
 
 }
@@ -281,48 +347,21 @@ brdf->brdfParam=mb->brdfParam;
     
     {
       std::cerr<<brdf->getName().c_str()<<std::endl;
+      brdf->brdfParam =new brdfMERLparam;
+      brdf->brdfParam->verOfColorSpace =  colorSpaceBox->isChecked();
+      addAttributeWidgets();
 
-    FloatVarWidget* fv;
-    
-    fv = new FloatVarWidget("1", -10.0, 10.0, 1.0);
-    connect(fv, SIGNAL(valueChanged(float)), this, SLOT(firstChanged(float)));
-    this->layout()->addWidget(fv);
-     fv = new FloatVarWidget("2", -10.0, 10.0, 1.0);
-    connect(fv, SIGNAL(valueChanged(float)), this, SLOT(secondChanged(float)));
-    this->layout()->addWidget(fv);
-     fv = new FloatVarWidget("3", -10.0, 10.0, 1.0);
-    connect(fv, SIGNAL(valueChanged(float)), this, SLOT(thirdChanged(float)));
-    this->layout()->addWidget(fv);
-      fv = new FloatVarWidget("4", -10.0, 10.0, 1.0);
-    connect(fv, SIGNAL(valueChanged(float)), this, SLOT(fourthChanged(float)));
-    this->layout()->addWidget(fv);
-      fv = new FloatVarWidget("5", -10.0, 10.0, 1.0);
-    connect(fv, SIGNAL(valueChanged(float)), this, SLOT(fifthChanged(float)));
-    this->layout()->addWidget(fv);
-    
-    
-    
-   
-  brdf->var = new float[5];
-  brdf->var[0]=1.0;
-  brdf->var[1]=1.0;
-  brdf->var[2]=1.0;
-  brdf->var[3]=1.0;
-  brdf->var[4]=1.0;
         BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
-      mb->project(brdf->getName().c_str(),brdf->var);
- // mb->loadMERLData(brdf->getName().c_str());
+        mb->brdfParam= brdf->brdfParam;
+      mb->project(brdf->getName().c_str());
+   
+      updateAttrSliders( mb->brdfParam);
+      
   delete brdf;    
  brdf=mb;
  brdf->numBRDFSamples=mb->numBRDFSamples;
-brdf->brdfParam=mb->brdfParam;
-  brdf->var = new float[5];
-  brdf->var[0]=1.0;
-  brdf->var[1]=1.0;
-  brdf->var[2]=1.0;
-  brdf->var[3]=1.0;
-  brdf->var[4]=1.0;
-    
+ brdf->brdfParam=mb->brdfParam;
+   
         brdf->wasProjected =true;
    
     }
@@ -331,7 +370,8 @@ brdf->brdfParam=mb->brdfParam;
     int floatIndex = 0;
     int boolIndex = 0;
 	int colorIndex = 0;
-
+	
+ 
     for( int i = 0; i < (int)brdfParamWidgets.size(); i++ )
     {
         // float
@@ -377,47 +417,16 @@ void ParameterGroupWidget::resetButtonPushed()
 {
     reload(true);
 }
-void ParameterGroupWidget::firstChanged(float v)
+void ParameterGroupWidget::attrChanged(float v,int id)
 {
-
+ if(! brdf->wasProjected) return;
 dosomething=true;
-brdf->var[0]=v;
-paramChanged();
-    
-}
-void ParameterGroupWidget::secondChanged(float v)
-{
+brdf->brdfParam->newAttrVal = v;
+brdf->brdfParam->idOfVal=id;
 
-dosomething=true;
-brdf->var[1]=v;
 paramChanged();
-    
-}
-void ParameterGroupWidget::thirdChanged(float v)
-{
 
-dosomething=true;
-brdf->var[2]=v;
-paramChanged();
-    
 }
-void ParameterGroupWidget::fourthChanged(float v)
-{
-
-dosomething=true;
-brdf->var[3]=v;
-paramChanged();
-    
-}
-void ParameterGroupWidget::fifthChanged(float v)
-{
-
-dosomething=true;
-brdf->var[4]=v;
-paramChanged();
-    
-}
-   
 
 void ParameterGroupWidget::reload(bool resetToDefaults)
 {

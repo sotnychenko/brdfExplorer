@@ -44,6 +44,8 @@ infringement.
 */
 
 #include <QtGui>
+#include<iostream>
+#include<exception>
 #include "FloatVarWidget.h"
 
 FloatVarWidget::FloatVarWidget(QString name, float minVal, float maxVal, float defaultVal)
@@ -91,6 +93,15 @@ FloatVarWidget::~FloatVarWidget()
     delete slider;
 }
 
+void FloatVarWidget::setId(int id)
+{
+   Id=id;
+}
+int  FloatVarWidget::getId()
+{
+ return Id;
+}
+
 
 void FloatVarWidget::sliderChanged(int x)
 {
@@ -98,7 +109,7 @@ void FloatVarWidget::sliderChanged(int x)
     updatingValue = true;
 
     edit->setText( QString().setNum( sliderToFloat(x) ) );
-    emit( valueChanged(getValue()) );
+    emit( valueChanged(getValue(),Id) );
 
     updatingValue = false;
 }
@@ -110,7 +121,7 @@ void FloatVarWidget::textChanged()
     updatingValue = true;
 
     slider->setValue( floatToSlider( getValue() ) );
-    emit( valueChanged(getValue()) );
+    emit( valueChanged(getValue(),Id) );
 
     updatingValue = false;
 }
@@ -131,7 +142,7 @@ int FloatVarWidget::floatToSlider( float x )
 void FloatVarWidget::setValue( float val )
 {
     edit->setText( QString().setNum( val ) );
-    textChanged();
+   textChanged();
 }
 
 void FloatVarWidget::setToDefault()

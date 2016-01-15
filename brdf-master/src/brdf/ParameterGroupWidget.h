@@ -49,6 +49,7 @@ infringement.
 #include <QFrame>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include "BRDFBase.h"
 
 class QVBoxLayout;
 class QPushButton;
@@ -106,17 +107,16 @@ private slots:
     void soloButtonPushed();
     void soloColorsButtonPushed(); 
     void saveParamsFileButtonPushed(); 
-    void firstChanged( float );
-    void secondChanged( float );
-    void thirdChanged( float );
-    void fourthChanged( float );
-    void fifthChanged( float );
+    void attrChanged( float,int );
+
     
 
 private:
     void reload(bool resetToDefaults);
     void addParameterWidgets();
     void changeTitleButtonColor( bool black );
+    void addAttributeWidgets();
+    void updateAttrSliders(brdfMERLparam*brdfParam);
     bool isSoloing();
 
     float brdfDrawColor[3];
@@ -126,7 +126,7 @@ private:
     BRDFBase* brdf;
     QCheckBox* visibleCheckBox;
     QCheckBox* pcaCheckBox;
- 
+    QCheckBox* colorSpaceBox;
     QPushButton* soloButton;
     QPushButton* soloColorsButton;
     QPushButton* titleButton;

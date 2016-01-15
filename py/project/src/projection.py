@@ -95,7 +95,7 @@ proj = ProjectToPCSpace(mapped,Q[mappedKnownSelector,:],relativeOffset[mappedKno
 nPCs = 5;
 
 #Perform editions over the projections
-#proj[0,:] *= 0;
+proj[0,:] *= 0;
 
 #print(proj[0,:].shape)
 #Get the BRDF back from PCA basis to the original space

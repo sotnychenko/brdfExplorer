@@ -52,6 +52,9 @@ infringement.
 #include <string>
 #include <vector>
 #include <eigen3/Eigen/Sparse>
+#include "cnpy.h"
+#include<vector>
+
 using namespace Eigen;
 
 
@@ -109,7 +112,13 @@ struct brdfMERLparam
    bool* MaskMap;
    float* median;
    double* CosineMap;
-    float* RelativeOffset;
+   float* RelativeOffset;
+   std::vector<cnpy::npz_t> npzFiles;
+   float* attrValues;
+   float newAttrVal;
+   int idOfVal;
+   bool verOfColorSpace;
+   
 };
 
 

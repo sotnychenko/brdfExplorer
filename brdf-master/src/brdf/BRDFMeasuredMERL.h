@@ -64,15 +64,15 @@ public:
 
     bool loadMERLData( const char* filename );
     bool loadPCAprojection( const char* filename );
-    void ProjectToPCSpace(float* data,float* PCs,float* relativeOffset,int Qsize,float* var);
+    void ProjectToPCSpace(float* data,float* PCs,float* relativeOffset,int Qsize);
 
-void project(const char *filename,float* var);
-float* ProjectToPCSpaceShort(float* var);
+void project(const char *filename);
+float* ProjectToPCSpaceShort();
 
 void UnmapBRDF(double* CosineMap,float* mappedData,bool* MaskMap,float* median,int mask_size);
 
 void  MapBRDF(float* reshapedBRDF,float* median,int Qsize );
-void projectShort(int numBRDFsam,const char *filename,float* var);
+void projectShort(int numBRDFsam,const char *filename);
 
 float*  reshape(double* CosineMap,bool* MaskMap,int mask_size,int Qsize, float* my_npy);
 
@@ -80,6 +80,17 @@ bool read_brdf( const char* filename );
 void allocBRDF();
 void reshapeFinal( );
 void setName(string n);
+void updateAttr(float* xnew);
+float normVec(float* x,Matrix<float, Dynamic, Dynamic,RowMajor> &Centers, int row);
+float evaluateFuncApproxRBFN(Matrix<float, Dynamic, Dynamic,RowMajor>& Centers, float* betas, float* Theta, bool normalize, float* input);
+float* getRBFActivations(Matrix<float, Dynamic, Dynamic,RowMajor>& Centers, float* betas, float* input);
+MatrixXf  rgb2Lab(MatrixXf proj);
+void lab2rgb( float l_s, float a_s, float b_s, float& R, float& G, float& B );
+void rgb2lab( float var_R, float var_G, float var_B, float & l_s, float &a_s, float &b_s );
+void lab2rgbv2( float l_s, float a_s, float b_s, float& R, float& G, float& B );
+void rgb2labv2( float var_R, float var_G, float var_B, float & l_s, float &a_s, float &b_s );
+ float sgn(float val);
+ 
     float* brdfData;
     GLuint tbo;
     GLuint tex;
