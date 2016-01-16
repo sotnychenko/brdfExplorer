@@ -141,7 +141,10 @@ int FloatVarWidget::floatToSlider( float x )
 
 void FloatVarWidget::setValue( float val )
 {
-    edit->setText( QString().setNum( val ) );
+   if(abs(val-1.0)<0.01)edit->setText(QString::number(val,'g',1));
+   else
+    edit->setText( QString::number( val,'f',1 ) );
+    
    textChanged();
 }
 
