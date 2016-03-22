@@ -644,7 +644,7 @@ BRDFBase* createBRDFFromFile( std::string filename )
         b = new BRDFAnalytic;
       
         success = b->loadBRDF( filename.c_str() );
-       
+  
     }
 
     // .brdf is an analytic BRDF file

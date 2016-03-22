@@ -309,10 +309,13 @@ void ParameterGroupWidget::addAttributeWidgets()
 
 BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
 {
+ // if this isn't visible, then don't send back a BRDF
+    if( visibleCheckBox && !visibleCheckBox->isChecked() && !isSoloing() )
+        return NULL;
 
 if(dosomething==true)
 {
-
+  
 
         dosomething=false;
       
@@ -331,21 +334,12 @@ brdf->brdfParam=mb->brdfParam;
         
 
 }
-    // if this isn't visible, then don't send back a BRDF
-    if( visibleCheckBox && !visibleCheckBox->isChecked() && !isSoloing() )
-        return NULL;
-       if( pcaCheckBox && !pcaCheckBox->isChecked() && brdf->wasProjected )
-       {
-       // this->reloadButtonPushed();
-         
-
-    // now redraw
-  //  paramChanged();
-     
-       }
-    if( pcaCheckBox->isChecked() && !brdf->wasProjected )
+  
+  if(pcaCheckBox!=NULL)
+  if( pcaCheckBox->isChecked() && !brdf->wasProjected )
     
     {
+     
       std::cerr<<brdf->getName().c_str()<<std::endl;
       brdf->brdfParam =new brdfMERLparam;
       brdf->brdfParam->verOfColorSpace =  colorSpaceBox->isChecked();
@@ -370,14 +364,12 @@ brdf->brdfParam=mb->brdfParam;
     int floatIndex = 0;
     int boolIndex = 0;
 	int colorIndex = 0;
-	
- 
+
     for( int i = 0; i < (int)brdfParamWidgets.size(); i++ )
     {
         // float
         if( brdfParamWidgets[i].type == BRDF_VAR_FLOAT )
         {
-       
             float value = 0.0;
             FloatVarWidget* w = dynamic_cast<FloatVarWidget*>(brdfParamWidgets[i].widget);
             if( w ) value = w->getValue();
