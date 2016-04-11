@@ -47,6 +47,7 @@ infringement.
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "PlotPCASlice2DWindow.h"
 
 class ParameterWindow;
 class ImageSliceWindow;
@@ -54,6 +55,7 @@ class Plot3DWidget;
 class PlotPolarWidget;
 class LitSphereWindow;
 class PlotCartesianWindow;
+class QCustomPlot;
 class IBLWindow;
 
 class MainWindow : public QMainWindow
@@ -75,6 +77,7 @@ private:
     PlotPolarWidget* viewer2D;
     LitSphereWindow* viewerSphere;
     ImageSliceWindow* imageSlice;
+    PlotPCASlice2DWindow* PCASlice2D;
     IBLWindow* ibl;
 
     PlotCartesianWindow* cartesianThetaV;

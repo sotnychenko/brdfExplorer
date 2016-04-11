@@ -127,7 +127,7 @@ ParameterGroupWidget::ParameterGroupWidget( ParameterWindow* pWindow, BRDFBase* 
     connect( visibleCheckBox, SIGNAL(stateChanged(int)), this, SLOT(paramChanged()) );
     
    std::string extension =  brdfIn->getName().substr( brdfIn->getName().find_last_of( '.' ) +1 );
-   
+    pcaCheckBox=NULL;
     if( extension == "binary" ){
     pcaCheckBox = new QCheckBox( "Project to PCA" );
     pcaCheckBox->setChecked( false );
@@ -266,6 +266,7 @@ void ParameterGroupWidget::addAttributeWidgets()
      unsigned first = strNew.find("_");
      strNew=  strNew.substr (first+1,strNew.size()-1);
      unsigned last = strNew.find("_");
+     brdf->brdfParam->attrNames.push_back(strNew.substr (0,last));
        
        fv = new FloatVarWidget(QString::fromStdString(strNew.substr (0,last)), 0.2, 1.0, 1.0);
     }
@@ -303,7 +304,9 @@ void ParameterGroupWidget::addAttributeWidgets()
         for(int i=0;i<brdfParam->npzFiles.size();i++)
       {  
             FloatVarWidget* w = (FloatVarWidget*)(this->layout()->itemAt(i+offset)->widget());      
-             w->setValue( brdfParam->attrValues[i]);   
+             w->setValue( brdfParam->attrValues[i]);
+
+
        }
   }
 
@@ -315,50 +318,50 @@ BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
 
 if(dosomething==true)
 {
-  
+
 
         dosomething=false;
-      
+
          BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
-         
+
          mb->brdfParam=brdf->brdfParam;
       mb->projectShort( brdf->numBRDFSamples,brdf->getName().c_str());
            brdf->wasProjected =false;
-       updateAttrSliders( mb->brdfParam);  
-       
-  delete brdf;    
+       updateAttrSliders( mb->brdfParam);
+
+  delete brdf;
  brdf=mb;
  brdf->numBRDFSamples=mb->numBRDFSamples;
-brdf->brdfParam=mb->brdfParam; 
+brdf->brdfParam=mb->brdfParam;
  brdf->wasProjected =true;
-        
+
 
 }
-  
-  if(pcaCheckBox!=NULL)
-  if( pcaCheckBox->isChecked() && !brdf->wasProjected )
-    
-    {
-     
-      std::cerr<<brdf->getName().c_str()<<std::endl;
-      brdf->brdfParam =new brdfMERLparam;
-      brdf->brdfParam->verOfColorSpace =  colorSpaceBox->isChecked();
-      addAttributeWidgets();
 
-        BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
-        mb->brdfParam= brdf->brdfParam;
-      mb->project(brdf->getName().c_str());
-   
-      updateAttrSliders( mb->brdfParam);
-      
-  delete brdf;    
- brdf=mb;
- brdf->numBRDFSamples=mb->numBRDFSamples;
- brdf->brdfParam=mb->brdfParam;
-   
-        brdf->wasProjected =true;
-   
-    }
+if(pcaCheckBox!=NULL)
+if( pcaCheckBox->isChecked() && !brdf->wasProjected )
+
+  {
+
+    std::cerr<<brdf->getName().c_str()<<std::endl;
+    brdf->brdfParam =new brdfMERLparam;
+    brdf->brdfParam->verOfColorSpace =  colorSpaceBox->isChecked();
+    addAttributeWidgets();
+
+      BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
+      mb->brdfParam= brdf->brdfParam;
+    mb->project(brdf->getName().c_str());
+
+    updateAttrSliders( mb->brdfParam);
+
+delete brdf;
+brdf=mb;
+brdf->numBRDFSamples=mb->numBRDFSamples;
+brdf->brdfParam=mb->brdfParam;
+
+      brdf->wasProjected =true;
+
+  }
 
 
     int floatIndex = 0;

@@ -25,7 +25,10 @@ HEADERS = *.h \
     redsvdFile.hpp \
     redsvdIncr.hpp \
     util.hpp \
-    global.h
+    global.h \
+    dirent.h \
+    qcustomplot.h \
+    PlotPCASlice2DWindow.h
 SOURCES = \
     BRDFAnalytic.cpp \
     BRDFBase.cpp \
@@ -61,7 +64,10 @@ SOURCES = \
     projectToPCA.cpp \
     cnpy.cpp \
     redsvdFile.cpp \
-    util.cpp
+    util.cpp \
+    dirent.cpp \
+    qcustomplot.cpp \
+    PlotPCASlice2DWindow.cpp
 
 
 QT   += opengl
@@ -112,10 +118,12 @@ DEFINES += GLEW_STATIC
  INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\include\
  INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\bin\
  INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\Eigen\include\
- LIBS += C:\Users\osotnych\Downloads\qt-everywhere-opensource-src-4.8.6\qt-everywhere-opensource-src-4.8.6\lib\QtOpenGL4.lib
- LIBS += C:\Users\osotnych\Downloads\qt-everywhere-opensource-src-4.8.6\qt-everywhere-opensource-src-4.8.6\lib\QtGui4.lib
- LIBS += C:\Users\osotnych\Downloads\qt-everywhere-opensource-src-4.8.6\qt-everywhere-opensource-src-4.8.6\lib\QtCore4.lib
+ LIBS += C:\Qt\qt-everywhere-opensource-src-4.8.6\lib\QtOpenGL4.lib
+ LIBS += C:\Qt\qt-everywhere-opensource-src-4.8.6\lib\QtGui4.lib
+ LIBS += C:\Qt\qt-everywhere-opensource-src-4.8.6\lib\QtCore4.lib
  LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\glut32.lib
  LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\glew32s.lib
+ LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\qhullcpp.lib
+ LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\qhullstatic_r.lib
 
 }

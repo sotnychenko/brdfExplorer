@@ -53,6 +53,8 @@ infringement.
 #include <vector>
 #include <eigen3/Eigen/Sparse>
 #include "cnpy.h"
+#include "qcustomplot.h"
+
 #include<vector>
 
 using namespace Eigen;
@@ -80,6 +82,10 @@ class BRDFBase;
 #define SHADER_CARTESIAN_ALBEDO     9
 
 
+struct path
+{
+  std::vector<QVector<double>> alpha;
+};
 
 struct brdfFloatParam
 {
@@ -114,10 +120,12 @@ struct brdfMERLparam
    double* CosineMap;
    float* RelativeOffset;
    std::vector<cnpy::npz_t> npzFiles;
+   std::vector<std::string> attrNames;
    float* attrValues;
    float newAttrVal;
    int idOfVal;
    bool verOfColorSpace;
+   std::vector<path> paths;
    
 };
 
@@ -204,10 +212,8 @@ public:
     virtual BRDFBase* cloneBRDF(bool resetToDefaults);
     void syncParametersIntoBRDF( BRDFBase* );
     bool wasProjected;
- int numBRDFSamples;
-
- float* var;
-   brdfMERLparam* brdfParam;
+    int numBRDFSamples;
+    brdfMERLparam* brdfParam;
 protected:
 
     virtual void addFloatParameter( std::string name, float min, float max, float value );

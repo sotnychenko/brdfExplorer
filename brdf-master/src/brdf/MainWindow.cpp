@@ -80,6 +80,10 @@ MainWindow::MainWindow()
     connect( paramWnd, SIGNAL(graphParametersChanged(bool,bool)), viewer2D, SLOT(graphParametersChanged(bool,bool)) );
     connect( paramWnd, SIGNAL(brdfListChanged(std::vector<brdfPackage>)), viewer2D, SLOT(brdfListChanged(std::vector<brdfPackage>)) );
 
+    PCASlice2D = new PlotPCASlice2DWindow(paramWnd);
+
+
+
     viewerSphere = new LitSphereWindow( paramWnd );
 
     ibl = new IBLWindow( paramWnd );
@@ -120,11 +124,18 @@ MainWindow::MainWindow()
     albedoWidget->setWidget( cartesianAlbedo );
     addDockWidget( Qt::RightDockWidgetArea, albedoWidget );
 
+    ShowingDockWidget* PCASlice2DWidget = new ShowingDockWidget(tr("PCA 2D Slice"), this);
+    PCASlice2DWidget->setWidget( PCASlice2D );
+    addDockWidget( Qt::RightDockWidgetArea, PCASlice2DWidget );
+
+
+
     tabifyDockWidget( Plot3DWidget, albedoWidget);
     tabifyDockWidget( albedoWidget, thetaHWidget);
     tabifyDockWidget( thetaHWidget, thetaDWidget );
     tabifyDockWidget( thetaDWidget, thetaVWidget );
     tabifyDockWidget( thetaVWidget, PlotPolarWidget );
+    tabifyDockWidget( PlotPolarWidget, PCASlice2DWidget );
 
     ShowingDockWidget* litSphereWidget = new ShowingDockWidget(tr("Lit Sphere"), this);
     litSphereWidget->setWidget( viewerSphere );
