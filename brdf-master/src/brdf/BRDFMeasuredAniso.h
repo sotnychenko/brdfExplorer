@@ -47,6 +47,7 @@ infringement.
 #define BRDFMEASUREDANISO_H
 
 #include <string>
+#include <windows.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "BRDFBase.h"

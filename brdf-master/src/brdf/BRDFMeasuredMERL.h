@@ -2,6 +2,7 @@
 #define BRDF_MEASURED_MERL_H
 
 #include <string>
+#include <windows.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <eigen3/Eigen/Sparse>
@@ -59,12 +60,27 @@ private:
     float normVec(float* x, Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, int row);
     static float* getRBFActivations(Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, float* betas, float* input);
     bool inhull(float* xnew, Matrix<double, Dynamic, Dynamic, RowMajor>& hull, float tol );
-
+    float evaluateBarLog(float* x,QhullFacetList& qlist,double tol);
+    float evaluateBarDer(float* x,QhullFacetList& qlist, int grad);
     static void lab2rgb(float l_s, float a_s, float b_s, float& R, float& G, float& B);
     static void rgb2lab(float var_R, float var_G, float var_B, float& l_s, float& a_s, float& b_s);
-    void lab2rgbv2(float l_s, float a_s, float b_s, float& R, float& G, float& B);
-    void rgb2labv2(float var_R, float var_G, float var_B, float& l_s, float& a_s, float& b_s);
+    static void lab2rgbv2(float l_s, float a_s, float b_s, float& R, float& G, float& B);
+    static void rgb2labv2(float var_R, float var_G, float var_B, float& l_s, float& a_s, float& b_s);
     static float sgn(float val);
+
+     static void toyusrf_(int    *Status, int *n,    double x[],
+              int    *needF,  int *neF,  double F[],
+              int    *needG,  int *neG,  double G[],
+              char      *cu,  int *lencu,
+              int    iu[],    int *leniu,
+              double ru[],    int *lenru );
+     static void toyusrfg_( int    *Status, int *n,    double x[],
+            int    *needF,  int *neF,  double F[],
+            int    *needG,  int *neG,  double G[],
+            char      *cu,  int *lencu,
+            int    iu[],    int *leniu,
+            double ru[],    int *lenru );
+    void minimzer();
 
     float* brdfData;
     GLuint tbo;

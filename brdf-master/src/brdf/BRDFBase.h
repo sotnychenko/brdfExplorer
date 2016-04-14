@@ -84,7 +84,7 @@ class BRDFBase;
 
 struct path
 {
-  std::vector<QVector<double>> alpha;
+  std::vector<QVector<double> > alpha;
 };
 
 struct brdfFloatParam
@@ -113,6 +113,8 @@ struct brdfMERLparam
 {
    MatrixXf Q;
    MatrixXf proj;
+   bool wasNotInHull;
+   float *xold;
    int mask_size;
    int Qsize;
    bool* MaskMap;

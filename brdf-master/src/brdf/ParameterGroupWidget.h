@@ -47,6 +47,7 @@ infringement.
 #define PARAMETER_GROUP_WIDGET_H
 
 #include <QFrame>
+#include <windows.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "BRDFBase.h"

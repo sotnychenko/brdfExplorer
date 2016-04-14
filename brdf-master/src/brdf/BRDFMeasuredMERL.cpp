@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#include <limits>
 #include <eigen3/Eigen/Sparse>
 
 #include "BRDFMeasuredMERL.h"
@@ -23,6 +24,7 @@
 #include "libqhullcpp/QhullVertex.h"
 #include "libqhullcpp/QhullVertexSet.h"
 #include "libqhullcpp/Qhull.h"
+
 
 using std::cerr;
 using std::cin;
@@ -48,6 +50,11 @@ using namespace Eigen;
 
 #define EPS 0.01
 
+bool custom_isnan(float var)
+{
+    volatile float d = var;
+    return d != d;
+}
 
 float BRDFMeasuredMERL::sgn(float val)
 {
@@ -440,9 +447,9 @@ MatrixXf BRDFMeasuredMERL::rgb2Lab(MatrixXf proj)
         for (int j = 0; j < proj.cols(); j++)
             //  cout<<proj(i,j)<<" ";
            // if (brdfParam->verOfColorSpace)
-           //     rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+                rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
           //  else
-                rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+          //      rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
     }
 
     return Lab;
@@ -592,10 +599,10 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
     updateAttr(xnew);
 
     for (int i = 0; i < project.rows(); i++)
-        if (brdfParam->verOfColorSpace)
-            lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
-        else
-            lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+    //    if (brdfParam->verOfColorSpace)
+           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+     //   else
+        //    lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
 
     brdfParam->Q = A;
     brdfParam->proj = project;
@@ -606,7 +613,7 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
         for (int j = 0; j < 3; j++)
             data[i * 3 + j] = recon(i, j) + relativeOffset[i];
 
-    delete xnew;
+    delete [] xnew;
 }
 
 double BRDFMeasuredMERL::dot(float* x, double* a, double* N)
@@ -617,6 +624,32 @@ double BRDFMeasuredMERL::dot(float* x, double* a, double* N)
 
     return result;
 }
+float BRDFMeasuredMERL::evaluateBarLog(float* x,QhullFacetList& qlist,double tol)
+{
+    float result = tol;
+    for( QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet!=qlist.end(); facet++ )
+        result+= log(dot(x,facet->vertices().at(1).point().coordinates(),facet->hyperplane().coordinates()));
+
+
+    return result;
+
+}
+
+
+float BRDFMeasuredMERL::evaluateBarDer(float* x,QhullFacetList& qlist, int grad)
+{
+
+    float der = 0.0;
+    for( QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet!=qlist.end(); facet++ )
+     {
+
+        der+=(-1.0)*facet->hyperplane().coordinates()[grad]/(dot(x,facet->vertices().at(1).point().coordinates(),facet->hyperplane().coordinates())+EPS);
+      }
+
+    return der;
+
+}
+
 bool BRDFMeasuredMERL::inhull(float* x,QhullFacetList& qlist,double tol)
 {
      bool inside = true;
@@ -689,13 +722,13 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
     arr_mv1 = my_npz["P"];
     double* PData = reinterpret_cast<double*>(arr_mv1.data);
 
-    Matrix<double, Dynamic, Dynamic, RowMajor> hull;
-    hull.resize(arr_mv1.shape[1], arr_mv1.shape[0]);
-    for (int i = 0; i < arr_mv1.shape[0] * arr_mv1.shape[1]; i++)
-        hull.data()[i] = PData[i];
+ //   Matrix<double, Dynamic, Dynamic, RowMajor> hull;
+  //  hull.resize(arr_mv1.shape[1], arr_mv1.shape[0]);
+  //  for (int i = 0; i < arr_mv1.shape[0] * arr_mv1.shape[1]; i++)
+  //      hull.data()[i] = PData[i];
 
 
-    double tol =1.e-12*(hull.cwiseAbs().mean());
+   // double tol =1.e-12*(hull.cwiseAbs().mean());
 
     Qhull qhull;
     RboxPoints rbox;
@@ -705,13 +738,51 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
     qhull.runQhull(rbox, "");
     QhullFacetList qlist =qhull.facetList();
 
-    while (abs(ynew - yobj) > EPS) {
 
+     float tol =0.0001;
+     float mu=100.0f;
+
+   cout<<"start"<<endl;
+  // cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
+
+   if(!inhull(xnew,qlist,tol)){
+       cout<<"was not in hull, changing to random"<<endl;
+         //brdfParam->wasNotInHull = false;
+    while(!inhull(xnew,qlist,tol))
+    {
+
+        xnew[0]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        xnew[1]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        xnew[2]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        xnew[3]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        xnew[4]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+
+    }
+
+   }
+
+    while (abs(ynew - yobj) > EPS || mu>EPS) {
+
+
+        float bar=evaluateBarLog (xnew,qlist,tol);
+/*
+       if(!custom_isnan(bar))
+       {
+
+        brdfParam->xold[0]=xnew[0];
+        brdfParam->xold[1]=xnew[1];
+        brdfParam->xold[2]=xnew[2];
+        brdfParam->xold[3]=xnew[3];
+        brdfParam->xold[4]=xnew[4];
+       }
+
+*/
         float* grad = new float[Centers.rows()];
         for (int i = 0; i < Centers.rows(); i++) {
             grad[i] = 0.0;
             for (int j = 0; j < Centers.cols(); j++) {
-                grad[i] += -2.0 * betas[j] * Theta[j + 1] * (xnew[i] - Centers(i, j)) * exp(-1.0 * betas[j] * normVec(xnew, Centers, j));
+                grad[i] += -2.0 * betas[j] * Theta[j + 1] * (xnew[i] - Centers(i, j)) * exp(-1.0 * betas[j] * normVec(xnew, Centers, j)) - mu*(evaluateBarDer(xnew,qlist,i));
             }
         }
 
@@ -727,25 +798,53 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
         }
 
 
-
-        ynew = evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew)-mu*bar;
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
 
-        if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew;break;}
+        mu*=0.76f;
+        cout<<"bar"<<bar<<endl;
+
+       // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
 
     }
+     /*if(!inhull(xnew,qlist,tol)){
+         cout<<"not in hull"<<endl;
 
+          brdfParam->wasNotInHull = true;
+          brdfParam->xold[0]=  xnew[0];
+          brdfParam->xold[1]=  xnew[1];
+          brdfParam->xold[2]= xnew[2];
+          brdfParam->xold[3]= xnew[3];
+          brdfParam->xold[4]= xnew[4];
+          int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
+          xnew[0]=  brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+         xnew[1]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+          xnew[2]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+          xnew[3]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+          xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+
+
+     }*/
+
+    // if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
+
+     cout<<"finished"<<endl;
+   //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
+
+     ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+
+    brdfParam->newAttrVal = ynew;
     updateAttr(xnew);
 
-    for (int i = 0; i < proj.rows(); i++)
-        if (brdfParam->verOfColorSpace)
+   for (int i = 0; i < proj.rows(); i++)
+    //    if (brdfParam->verOfColorSpace)
             lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
-        else
-            lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+   //     else
+       //     lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
 
     MatrixXf recon = brdfParam->Q * proj;
     brdfParam->proj = proj;
@@ -760,6 +859,7 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
 
 
 
+    delete [] xnew;
 
     return data;
 }
@@ -784,6 +884,8 @@ void BRDFMeasuredMERL::project(const char* filename)
     brdfParam->attrValues = new float[brdfParam->npzFiles.size()];
     brdfParam->paths.resize(brdfParam->npzFiles.size());
     brdfParam->idOfVal=0;
+    brdfParam->wasNotInHull = false;
+    brdfParam->xold = new float[5];
 
     // read brdf
     if (!readBrdf(filename)) {

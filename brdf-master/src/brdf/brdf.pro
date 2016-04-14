@@ -28,7 +28,20 @@ HEADERS = *.h \
     global.h \
     dirent.h \
     qcustomplot.h \
-    PlotPCASlice2DWindow.h
+    PlotPCASlice2DWindow.h \
+    ptex/PtexCache.h \
+    ptex/PtexDict.h \
+    ptex/PtexHalf.h \
+    ptex/PtexHashMap.h \
+    ptex/PtexInt.h \
+    ptex/PtexIO.h \
+    ptex/PtexMutex.h \
+    ptex/PtexPlatform.h \
+    ptex/PtexReader.h \
+    ptex/Ptexture.h \
+    ptex/PtexUtils.h \
+    snopt.h \
+    snoptProblem.hpp
 SOURCES = \
     BRDFAnalytic.cpp \
     BRDFBase.cpp \
@@ -114,7 +127,7 @@ linux-mingw32-custom{
 }
 
 win32 {
-DEFINES += GLEW_STATIC
+ DEFINES += GLEW_STATIC
  INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\include\
  INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\bin\
  INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\Eigen\include\
