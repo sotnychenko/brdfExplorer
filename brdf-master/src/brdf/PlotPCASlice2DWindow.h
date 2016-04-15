@@ -4,6 +4,7 @@
 
 
 #include <QWidget>
+#include <QtGui>
 #include "BRDFBase.h"
 #include "ShowingBase.h"
 #include "qcustomplot.h"
@@ -26,6 +27,7 @@ public slots:
     void attrComboBoxIndChanged(int);
     void xAxisComboBoxIndChanged(int);
     void yAxisComboBoxIndChanged(int);
+    void buttonCleanPushed();
 
 private:
     QCustomPlot* customPlot;
@@ -34,6 +36,7 @@ private:
     QComboBox* yAxisComboBox;
     QCPColorMap *colorMap;
     QCPColorScale *colorScale;
+    QPushButton* buttonClean;
     std::vector<brdfPackage> brdfs;
     bool attrListReady;
     void drawPlot();

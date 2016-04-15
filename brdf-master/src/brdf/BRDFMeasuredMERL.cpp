@@ -739,12 +739,13 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
     QhullFacetList qlist =qhull.facetList();
 
 
-     float tol =0.0001;
-     float mu=100.0f;
+     float tol =0.001;
+     float mu=150.0f;
 
    cout<<"start"<<endl;
   // cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
-
+if(abs(ynew - yobj) > EPS)
+{
    if(!inhull(xnew,qlist,tol)){
        cout<<"was not in hull, changing to random"<<endl;
          //brdfParam->wasNotInHull = false;
@@ -766,8 +767,9 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
 
 
         float bar=evaluateBarLog (xnew,qlist,tol);
-/*
-       if(!custom_isnan(bar))
+
+
+       /*if(!custom_isnan(bar))
        {
 
         brdfParam->xold[0]=xnew[0];
@@ -775,9 +777,9 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
         brdfParam->xold[2]=xnew[2];
         brdfParam->xold[3]=xnew[3];
         brdfParam->xold[4]=xnew[4];
-       }
+       }*/
 
-*/
+
         float* grad = new float[Centers.rows()];
         for (int i = 0; i < Centers.rows(); i++) {
             grad[i] = 0.0;
@@ -805,8 +807,8 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
 
-        mu*=0.76f;
-        cout<<"bar"<<bar<<endl;
+        mu*=0.46f;
+        cout<<"ln(c(x))="<<bar<<endl;
 
        // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
 
@@ -838,6 +840,9 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
      ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
 
     brdfParam->newAttrVal = ynew;
+
+}
+
     updateAttr(xnew);
 
    for (int i = 0; i < proj.rows(); i++)

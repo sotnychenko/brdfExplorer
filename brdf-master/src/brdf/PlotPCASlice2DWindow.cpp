@@ -61,16 +61,38 @@ PlotPCASlice2DWindow::PlotPCASlice2DWindow( ParameterWindow* paramWindow )
 
     buttonLayout->addWidget(yAxisComboBox);
 
+    buttonClean = new QPushButton("Clean", this);
 
+    // add the solo button
+    buttonClean->setToolTip( "Cleans the path" );
+    connect( buttonClean, SIGNAL(clicked()), this, SLOT(buttonCleanPushed()) );
 
+    buttonClean->setFixedWidth( 50 );
+    buttonClean->setFixedHeight( 25 );
+    mainLayout->addWidget( buttonClean,0,Qt::AlignRight );
+
+   // mainLayout->setAlignment(Qt::AlignCenter);
     setLayout(mainLayout);
 
+}
+
+
+void PlotPCASlice2DWindow::buttonCleanPushed()
+
+{
+if(brdfs.size()>0){
+
+   brdfs[0].brdf->brdfParam->paths.at(attrComboBox->currentIndex()).alpha.clear();
+   drawPlot();
+}
+
+return;
 }
 
 void PlotPCASlice2DWindow::attrComboBoxIndChanged(int index)
 
 {
-    cout<<"index changed"<<index<<endl;
+    //cout<<"index changed"<<index<<endl;
     attrComboBox->setCurrentIndex( index );
     if(brdfs.size()>0)
     drawPlot();
