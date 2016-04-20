@@ -134,10 +134,10 @@ ParameterGroupWidget::ParameterGroupWidget( ParameterWindow* pWindow, BRDFBase* 
     cmdLayout->addWidget( pcaCheckBox );
     connect( pcaCheckBox, SIGNAL(stateChanged(int)), this, SLOT(paramChanged()) );
     
-    colorSpaceBox = new QCheckBox( "2nd ver" );
-    colorSpaceBox->setChecked( false );
-    cmdLayout->addWidget( colorSpaceBox );
-    connect( colorSpaceBox, SIGNAL(stateChanged(int)), this, SLOT(paramChanged()) );
+   // colorSpaceBox = new QCheckBox( "2nd ver" );
+   // colorSpaceBox->setChecked( false );
+  //  cmdLayout->addWidget( colorSpaceBox );
+   // connect( colorSpaceBox, SIGNAL(stateChanged(int)), this, SLOT(paramChanged()) );
    }
 
 
@@ -345,7 +345,7 @@ if( pcaCheckBox->isChecked() && !brdf->wasProjected )
 
     std::cerr<<brdf->getName().c_str()<<std::endl;
     brdf->brdfParam =new brdfMERLparam;
-    brdf->brdfParam->verOfColorSpace =  colorSpaceBox->isChecked();
+   // brdf->brdfParam->verOfColorSpace =  colorSpaceBox->isChecked();
     addAttributeWidgets();
 
       BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;

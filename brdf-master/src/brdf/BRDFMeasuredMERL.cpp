@@ -26,6 +26,9 @@
 #include "libqhullcpp/Qhull.h"
 
 
+
+
+
 using std::cerr;
 using std::cin;
 using std::cout;
@@ -41,6 +44,7 @@ using orgQhull::RboxPoints;
 using orgQhull::QhullVertex;
 using orgQhull::QhullVertexSet;
 using orgQhull::QhullLinkedList;
+
 
 using namespace Eigen;
 
@@ -454,7 +458,7 @@ MatrixXf BRDFMeasuredMERL::rgb2Lab(MatrixXf proj)
 
     return Lab;
 }
-float* BRDFMeasuredMERL::getRBFActivations(Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, float* betas, float* input)
+float* BRDFMeasuredMERL::getRBFActivations(Eigen::Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, float* betas, float* input)
 {
 
     float* sqrdDists = new float[Centers.cols()];
@@ -474,7 +478,7 @@ float* BRDFMeasuredMERL::getRBFActivations(Matrix<float, Dynamic, Dynamic, RowMa
 
     return sqrdDists;
 }
-float BRDFMeasuredMERL::evaluateFuncApproxRBFN(Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, float* betas, float* Theta, bool normalize, float* input)
+float BRDFMeasuredMERL::evaluateFuncApproxRBFN(Eigen::Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, float* betas, float* Theta, bool normalize, float* input)
 {
 
     float result = 0.0;
@@ -496,7 +500,7 @@ float BRDFMeasuredMERL::evaluateFuncApproxRBFN(Matrix<float, Dynamic, Dynamic, R
     return result;
 }
 
-float BRDFMeasuredMERL::normVec(float* x, Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, int row)
+float BRDFMeasuredMERL::normVec(float* x, Eigen::Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, int row)
 
 {
     float result = 0.0;
@@ -512,7 +516,7 @@ void BRDFMeasuredMERL::updateAttr(float* xnew)
 
         cnpy::NpyArray arr_mv1 = brdfParam->npzFiles.at(i)["Centers"];
         double* mv1 = reinterpret_cast<double*>(arr_mv1.data);
-        Matrix<float, Dynamic, Dynamic, RowMajor> Centers;
+        Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> Centers;
         Centers.resize(arr_mv1.shape[1], arr_mv1.shape[0]);
         for (int i = 0; i < arr_mv1.shape[0] * arr_mv1.shape[1]; i++)
             Centers.data()[i] = mv1[i];
@@ -559,7 +563,7 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
 
 {
     int numC = 5;
-    Matrix<float, Dynamic, Dynamic, RowMajor> b;
+    Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> b;
     b.resize(Qsize, 3);
     for (int i = 0; i < Qsize; i++) {
         b.data()[3 * i + 0] = data[3 * i + 0] - relativeOffset[i];
@@ -569,7 +573,7 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
 
     //cout<<b(0,0)<<endl<<b(0,1)<<endl<<b(0,2)<<endl;
 
-    Matrix<float, Dynamic, Dynamic, RowMajor> A;
+    Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> A;
     A.resize(Qsize, numC);
     for (int i = 0; i < Qsize; i++)
         for (int j = 0; j < numC; j++)
@@ -678,7 +682,7 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
 
     cnpy::NpyArray arr_mv1 = brdfParam->npzFiles.at(brdfParam->idOfVal)["Centers"];
     double* mv1 = reinterpret_cast<double*>(arr_mv1.data);
-    Matrix<float, Dynamic, Dynamic, RowMajor> Centers;
+    Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> Centers;
     Centers.resize(arr_mv1.shape[1], arr_mv1.shape[0]);
     for (int i = 0; i < arr_mv1.shape[0] * arr_mv1.shape[1]; i++)
         Centers.data()[i] = mv1[i];
@@ -708,11 +712,11 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
 
     if(brdfParam->paths.at(brdfParam->idOfVal).alpha.size()==0) {
         brdfParam->paths.at(brdfParam->idOfVal).alpha.resize(5);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
+        /*brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
+        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);*/
     }
 
     float yobj = brdfParam->newAttrVal;
@@ -739,11 +743,13 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
     QhullFacetList qlist =qhull.facetList();
 
 
-     float tol =0.001;
+     float tol =0.0001;
      float mu=150.0f;
 
    cout<<"start"<<endl;
   // cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
+
+
 if(abs(ynew - yobj) > EPS)
 {
    if(!inhull(xnew,qlist,tol)){
@@ -807,7 +813,7 @@ if(abs(ynew - yobj) > EPS)
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
 
-        mu*=0.46f;
+        mu*=0.6f;
         cout<<"ln(c(x))="<<bar<<endl;
 
        // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }

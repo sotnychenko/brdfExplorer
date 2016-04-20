@@ -1,6 +1,8 @@
 TEMPLATE = app
 CONFIG += qt4  #debug
 
+
+
 isEmpty(prefix) {
         prefix = /local
 }
@@ -41,7 +43,9 @@ HEADERS = *.h \
     ptex/Ptexture.h \
     ptex/PtexUtils.h \
     snopt.h \
-    snoptProblem.hpp
+    snoptProblem.hpp \
+    ipopt.h \
+    hs071_nlp.hpp
 SOURCES = \
     BRDFAnalytic.cpp \
     BRDFBase.cpp \
@@ -123,20 +127,12 @@ linux-mingw32-custom{
     LIBS += -L$$WINDOWS_BUILD/glew-1.9.0/lib/
     LIBS += -static-libgcc
     LIBS += -lglew32s
-
 }
 
 win32 {
+ DepPath = ../../dependencies
  DEFINES += GLEW_STATIC
- INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\include\
- INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\bin\
- INCLUDEPATH += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\Eigen\include\
- LIBS += C:\Qt\qt-everywhere-opensource-src-4.8.6\lib\QtOpenGL4.lib
- LIBS += C:\Qt\qt-everywhere-opensource-src-4.8.6\lib\QtGui4.lib
- LIBS += C:\Qt\qt-everywhere-opensource-src-4.8.6\lib\QtCore4.lib
- LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\glut32.lib
- LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\glew32s.lib
- LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\qhullcpp.lib
- LIBS += C:\Users\osotnych\Desktop\git\brdfExplorer\dependencies\lib\qhullstatic_r.lib
-
+ INCLUDEPATH += $$DepPath/include
+ INCLUDEPATH += $$DepPath/Eigen/include
+ LIBS +=$$DepPath/lib/*
 }
