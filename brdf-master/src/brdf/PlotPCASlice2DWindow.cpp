@@ -285,9 +285,28 @@ void PlotPCASlice2DWindow::drawPlot()
           customPlot->graph()->setLineStyle((QCPGraph::LineStyle)1);
           customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 8.5));
 
+
       customPlot->graph()->setData(brdfs[0].brdf->brdfParam->paths.at(attrComboBox->currentIndex()).alpha.at(xAxisComboBox->currentIndex()),
                                    brdfs[0].brdf->brdfParam->paths.at(attrComboBox->currentIndex()).alpha.at(yAxisComboBox->currentIndex()));
       customPlot->graph()->rescaleAxes(true);
+
+
+
+    // add the arrow:
+    QCPItemLine *arrow = new QCPItemLine(customPlot);
+    customPlot->addItem(arrow);
+
+
+    arrow->start->setCoords(brdfs[0].brdf->brdfParam->paths.at(attrComboBox->currentIndex()).alpha.at(xAxisComboBox->currentIndex()).at(0),
+                            brdfs[0].brdf->brdfParam->paths.at(attrComboBox->currentIndex()).alpha.at(yAxisComboBox->currentIndex()).at(0));
+    arrow->end->setCoords(brdfs[0].brdf->brdfParam->paths.at(attrComboBox->currentIndex()).alpha.at(xAxisComboBox->currentIndex()).last(),
+                          brdfs[0].brdf->brdfParam->paths.at(attrComboBox->currentIndex()).alpha.at(yAxisComboBox->currentIndex()).last()); // point to (4, 1.6) in x-y-plot coordinates
+    arrow->setHead(QCPLineEnding::esSpikeArrow);
+
+
+
+
+
     }
 
     customPlot->replot();

@@ -133,6 +133,6 @@ win32 {
  DepPath = ../../dependencies
  DEFINES += GLEW_STATIC
  INCLUDEPATH += $$DepPath/include
- INCLUDEPATH += $$DepPath/Eigen/include
+ INCLUDEPATH += $$DepPath/Eigen/include/eigen3
  LIBS +=$$DepPath/lib/*
 }

@@ -4,7 +4,9 @@
 #include <fstream>
 #include <string.h>
 #include <limits>
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Sparse>
+#include <unsupported/Eigen/NonLinearOptimization>
+#include <unsupported/Eigen/NumericalDiff>
 
 #include "BRDFMeasuredMERL.h"
 #include "DGLShader.h"
@@ -24,8 +26,8 @@
 #include "libqhullcpp/QhullVertex.h"
 #include "libqhullcpp/QhullVertexSet.h"
 #include "libqhullcpp/Qhull.h"
-
-
+#include <stdlib.h>
+#include "cmaes.h"
 
 
 
@@ -453,7 +455,7 @@ MatrixXf BRDFMeasuredMERL::rgb2Lab(MatrixXf proj)
            // if (brdfParam->verOfColorSpace)
                 rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
           //  else
-          //      rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+              //  rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
     }
 
     return Lab;
@@ -562,6 +564,10 @@ void BRDFMeasuredMERL::UnmapBRDF(double* CosineMap, float* mappedData, bool* Mas
 void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relativeOffset, int Qsize)
 
 {
+
+
+
+
     int numC = 5;
     Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> b;
     b.resize(Qsize, 3);
@@ -606,7 +612,7 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
     //    if (brdfParam->verOfColorSpace)
            lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
      //   else
-        //    lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+        //   lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
 
     brdfParam->Q = A;
     brdfParam->proj = project;
@@ -746,10 +752,116 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
      float tol =0.0001;
      float mu=150.0f;
 
+
+if(abs(ynew - yobj) > EPS){
    cout<<"start"<<endl;
   // cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
+  float direction = (ynew - yobj<0) ? -1.0: 1.0;
+
+   CMAES<float> evo;
+   float *arFunvals, *const*pop, *xfinal;
 
 
+    // Initialize everything
+    const int dim = 5;
+
+
+    float xstart[dim];
+    for(int i=0; i<dim; i++) xstart[i] = xnew[i];
+    float stddev[dim];
+    for(int i=0; i<dim; i++) stddev[i] = 0.08;
+    Parameters<float> parameters;
+    // TODO Adjust parameters here
+    parameters.init(dim, xstart, stddev);
+    arFunvals = evo.init(parameters);
+
+   // std::cout << evo.sayHello() << std::endl;
+ // bool found = false;
+    // Iterate until stop criterion holds
+    while(!evo.testForTermination())
+    {
+      // Generate lambda new search points, sample population
+      pop = evo.samplePopulation(); // Do not change content of pop
+
+      /* Here you may resample each solution point pop[i] until it
+         becomes feasible, e.g. for box constraints (variable
+         boundaries). function is_feasible(...) needs to be
+         user-defined.
+         Assumptions: the feasible domain is convex, the optimum is
+         not on (or very close to) the domain boundary, initialX is
+         feasible and initialStandardDeviations are sufficiently small
+         to prevent quasi-infinite looping.
+      */
+       for (int i = 0; i < evo.get(CMAES<float>::PopSize); ++i)
+           while (!inhull(pop[i],qlist,tol))
+             evo.reSampleSingle(i);
+
+
+      // evaluate the new search points using fitfun from above
+      for (int i = 0; i < evo.get(CMAES<float>::Lambda); ++i)
+        {
+          arFunvals[i]=  direction*evaluateFuncApproxRBFN(Centers, betas, Theta, true, pop[i]);
+
+        //  if(abs(abs(arFunvals[i]) - yobj) < EPS) {
+     // found = true;
+      // cout<<"found breaking!"<<endl;
+     //for(int j=0; j<dim; j++) xnew[i]=pop[i][j];
+
+
+
+        // break;
+          //}
+
+      }
+       // arFunvals[i] = fitfun(pop[i], (int) evo.get(CMAES<double>::Dimension));
+
+    // for(int i=0; i<dim; i++) xnew[i]=*pop[i];
+     // if(!found)
+       xnew =evo.getNew(CMAES<float>::XMean);
+       ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+
+
+
+
+      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
+      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
+      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
+      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
+      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
+
+      if(abs(ynew - yobj) < 0.045) {//found = true;
+          cout<<"found breaking!"<<endl;
+
+          break;
+      }
+
+      // update the search distribution used for sampleDistribution()
+      evo.updateDistribution(arFunvals);
+    }
+   // std::cout << "Stop:" << std::endl << evo.getStopMessage();
+   // evo.writeToFile(CMAES<float>::WKResume, "resumeevo1.dat"); // write resumable state of CMA-ES
+
+    // get best estimator for the optimum, xmean
+    /*if(!found){
+    xfinal = evo.getNew(CMAES<float>::XMean); // "XBestEver" might be used as well
+    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xfinal[0]);
+    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xfinal[1]);
+    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xfinal[2]);
+    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xfinal[3]);
+    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xfinal[4]);
+
+
+   for(int i=0; i<dim; i++) xnew[i]=xfinal[i];
+
+   delete[] xfinal;
+    }*/
+
+    // do something with final solution and finally release memory
+
+
+
+
+/*
 if(abs(ynew - yobj) > EPS)
 {
    if(!inhull(xnew,qlist,tol)){
@@ -775,15 +887,15 @@ if(abs(ynew - yobj) > EPS)
         float bar=evaluateBarLog (xnew,qlist,tol);
 
 
-       /*if(!custom_isnan(bar))
-       {
-
-        brdfParam->xold[0]=xnew[0];
-        brdfParam->xold[1]=xnew[1];
-        brdfParam->xold[2]=xnew[2];
-        brdfParam->xold[3]=xnew[3];
-        brdfParam->xold[4]=xnew[4];
-       }*/
+       //if(!custom_isnan(bar))
+      // {
+//
+     //   brdfParam->xold[0]=xnew[0];
+     //   brdfParam->xold[1]=xnew[1];
+      //  brdfParam->xold[2]=xnew[2];
+      //  brdfParam->xold[3]=xnew[3];
+      //  brdfParam->xold[4]=xnew[4];
+      // }
 
 
         float* grad = new float[Centers.rows()];
@@ -819,43 +931,57 @@ if(abs(ynew - yobj) > EPS)
        // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
 
     }
-     /*if(!inhull(xnew,qlist,tol)){
-         cout<<"not in hull"<<endl;
+   //  if(!inhull(xnew,qlist,tol)){
+    //     cout<<"not in hull"<<endl;
 
-          brdfParam->wasNotInHull = true;
-          brdfParam->xold[0]=  xnew[0];
-          brdfParam->xold[1]=  xnew[1];
-          brdfParam->xold[2]= xnew[2];
-          brdfParam->xold[3]= xnew[3];
-          brdfParam->xold[4]= xnew[4];
-          int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
-          xnew[0]=  brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-         xnew[1]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-          xnew[2]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-          xnew[3]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-          xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+     //     brdfParam->wasNotInHull = true;
+     //     brdfParam->xold[0]=  xnew[0];
+     //     brdfParam->xold[1]=  xnew[1];
+     //     brdfParam->xold[2]= xnew[2];
+     //     brdfParam->xold[3]= xnew[3];
+     //     brdfParam->xold[4]= xnew[4];
+     //     int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
+     //     xnew[0]=  brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+    //     xnew[1]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+    //      xnew[2]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+   //       xnew[3]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
+   //       xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
 
 
-     }*/
+    // }
 
     // if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
+
+
 
      cout<<"finished"<<endl;
    //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
 
      ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
 
+
+
     brdfParam->newAttrVal = ynew;
 
+}*/
+
+//   if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
+   cout<<"finished"<<endl;
+ //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
+
+
+
+
 }
+  brdfParam->newAttrVal = ynew;
 
     updateAttr(xnew);
 
    for (int i = 0; i < proj.rows(); i++)
     //    if (brdfParam->verOfColorSpace)
-            lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
    //     else
-       //     lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+          //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
 
     MatrixXf recon = brdfParam->Q * proj;
     brdfParam->proj = proj;
@@ -871,6 +997,7 @@ if(abs(ynew - yobj) > EPS)
 
 
     delete [] xnew;
+
 
     return data;
 }

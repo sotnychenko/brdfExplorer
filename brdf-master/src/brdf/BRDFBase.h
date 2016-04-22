@@ -51,7 +51,7 @@ infringement.
 
 #include <string>
 #include <vector>
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Sparse>
 #include "cnpy.h"
 #include "qcustomplot.h"
 

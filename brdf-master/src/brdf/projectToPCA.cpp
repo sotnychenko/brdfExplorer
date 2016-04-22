@@ -1,7 +1,7 @@
 // my first program in C++
 #include <iostream>
 #include <cstdlib>
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Sparse>
 #include"cnpy.h"
 
 #include "redsvd.hpp"

@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include <eigen3/Eigen/Sparse>
+#include <Eigen/Sparse>
 #include "BRDFBase.h"
 #include "projectToPCA.h"
 
@@ -45,6 +45,13 @@ private:
     void ProjectToPCSpace(float* data, float* PCs, float* relativeOffset, int Qsize);
 
     float* ProjectToPCSpaceShort();
+    double fitfun(double const *x, int N)
+    {
+      double sum = 1e4*x[0]*x[0] + 1e-4*x[1]*x[1];
+      for(int i = 2; i < N; ++i)
+        sum += x[i]*x[i];
+      return sum;
+    }
 
     void UnmapBRDF(double* CosineMap, float* mappedData, bool* MaskMap, float* median, int mask_size);
 
