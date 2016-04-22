@@ -769,7 +769,7 @@ if(abs(ynew - yobj) > EPS){
     float xstart[dim];
     for(int i=0; i<dim; i++) xstart[i] = xnew[i];
     float stddev[dim];
-    for(int i=0; i<dim; i++) stddev[i] = 0.08;
+    for(int i=0; i<dim; i++) stddev[i] = 0.25;
     Parameters<float> parameters;
     // TODO Adjust parameters here
     parameters.init(dim, xstart, stddev);

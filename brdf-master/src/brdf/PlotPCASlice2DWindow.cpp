@@ -247,11 +247,13 @@ void PlotPCASlice2DWindow::drawPlot()
 
           z = BRDFMeasuredMERL::evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
 
-
+       if(z>1) z=1.0;
+       if(z<0) z =0.0;
 
         colorMap->data()->setCell(xIndex, yIndex, z);
       }
     }
+    colorScale->setDataRange(QCPRange(0.0, 1.0));
     colorMap->setColorScale(colorScale); // associate the color map with the color scale
    // colorScale->axis()->setLabel("Magnetic Field Strength");
 
@@ -261,7 +263,9 @@ void PlotPCASlice2DWindow::drawPlot()
     // the gradient, see the documentation of QCPColorGradient for what's possible.
 
     // rescale the data dimension (color) such that all data points lie in the span visualized by the color gradient:
-    colorMap->rescaleDataRange();
+
+    //colorMap->rescaleDataRange();
+
 
     // make sure the axis rect and color scale synchronize their bottom and top margins (so they line up):
     QCPMarginGroup *marginGroup = new QCPMarginGroup(customPlot);
