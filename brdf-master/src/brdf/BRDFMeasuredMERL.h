@@ -75,6 +75,8 @@ private:
     static void rgb2labv2(float var_R, float var_G, float var_B, float& l_s, float& a_s, float& b_s);
     static float sgn(float val);
 
+    void gradientDescend (float* xnew,float &ynew,float yobj,float mu,float mult, float* betas, float* Theta,Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> &Centers,QhullFacetList qlist,float tol);
+
      static void toyusrf_(int    *Status, int *n,    double x[],
               int    *needF,  int *neF,  double F[],
               int    *needG,  int *neG,  double G[],

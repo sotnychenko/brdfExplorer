@@ -54,6 +54,7 @@ using namespace Eigen;
 #define BRDF_SAMPLING_RES_THETA_D 90
 #define BRDF_SAMPLING_RES_PHI_D 360
 
+
 #define EPS 0.01
 
 bool custom_isnan(float var)
@@ -453,9 +454,9 @@ MatrixXf BRDFMeasuredMERL::rgb2Lab(MatrixXf proj)
         for (int j = 0; j < proj.cols(); j++)
             //  cout<<proj(i,j)<<" ";
            // if (brdfParam->verOfColorSpace)
-                rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+              //  rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
           //  else
-              //  rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+                rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
     }
 
     return Lab;
@@ -610,9 +611,9 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
 
     for (int i = 0; i < project.rows(); i++)
     //    if (brdfParam->verOfColorSpace)
-           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+         //  lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
      //   else
-        //   lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+           lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
 
     brdfParam->Q = A;
     brdfParam->proj = project;
@@ -673,6 +674,93 @@ bool BRDFMeasuredMERL::inhull(float* x,QhullFacetList& qlist,double tol)
     }
 
     return inside;
+}
+
+void BRDFMeasuredMERL::gradientDescend (float* xnew,float &ynew,float yobj,float mu,float mult, float* betas, float* Theta,Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> &Centers,QhullFacetList qlist,float tol)
+{
+    float bar;
+    float alpha = 0.01;
+    float* grad = new float[Centers.rows()];
+    while (abs(ynew - yobj) > EPS || mu>EPS) {
+
+        bar=evaluateBarLog (xnew,qlist,tol);
+
+      /* if(!custom_isnan(bar)) break;
+       {
+
+        brdfParam->xold[0]=xnew[0];
+        brdfParam->xold[1]=xnew[1];
+        brdfParam->xold[2]=xnew[2];
+        brdfParam->xold[3]=xnew[3];
+        brdfParam->xold[4]=xnew[4];
+       }*/
+
+
+
+        for (int i = 0; i < Centers.rows(); i++) {
+            grad[i] = 0.0;
+            for (int j = 0; j < Centers.cols(); j++) {
+                grad[i] += -2.0 * betas[j] * Theta[j + 1] * (xnew[i] - Centers(i, j)) * exp(-1.0 * betas[j] * normVec(xnew, Centers, j)) - mu*(evaluateBarDer(xnew,qlist,i));
+            }
+        }
+
+        float norm = 0.0;
+        for (int i = 0; i < Centers.rows(); i++)
+            norm += grad[i] * grad[i];
+
+        norm = sqrt(norm);
+
+        for (int i = 0; i < Centers.rows(); i++) {
+            grad[i] /= norm;
+            xnew[i] -= sgn(ynew - yobj) * alpha * grad[i];
+        }
+
+
+        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew)-mu*bar;
+        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
+        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
+        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
+        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
+        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
+
+        mu*=mult;
+       // cout<<"ln(c(x))="<<bar<<endl;
+
+       // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
+
+    }
+      if(!inhull(xnew,qlist,tol)){
+    //     cout<<"not in hull"<<endl;
+
+     //     brdfParam->wasNotInHull = true;
+         // brdfParam->xold[0]=  xnew[0];
+         // brdfParam->xold[1]=  xnew[1];
+        //  brdfParam->xold[2]= xnew[2];
+        //  brdfParam->xold[3]= xnew[3];
+       //   brdfParam->xold[4]= xnew[4];
+          int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
+          xnew[0]=  brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
+          xnew[1]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
+          xnew[2]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
+          xnew[3]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
+          xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
+
+
+     }
+
+    // if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
+
+  ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+
+    // cout<<"finished"<<endl;
+   //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
+
+    // ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+
+
+     //brdfParam->newAttrVal = ynew;
+
+    delete []grad;
 }
 
 float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
@@ -751,10 +839,23 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
 
      float tol =0.0001;
      float mu=150.0f;
+     float mult =0.5f;
+
+bool found = false;
+
+ if(abs(ynew - yobj) > EPS)
+ {gradientDescend(xnew, ynew,yobj, mu, mult,betas,Theta,Centers, qlist,tol);
+     cout<<"start"<<endl;
+     cout<<"doing grad descend"<<endl;
+      cout<<"grad finished on ynew"<<ynew<<endl;
+ }
+
 
 
 if(abs(ynew - yobj) > EPS){
-   cout<<"start"<<endl;
+
+   cout<<" continue with cmaes"<<endl;
+
   // cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
   float direction = (ynew - yobj<0) ? -1.0: 1.0;
 
@@ -807,7 +908,14 @@ if(abs(ynew - yobj) > EPS){
       // cout<<"found breaking!"<<endl;
      //for(int j=0; j<dim; j++) xnew[i]=pop[i][j];
 
+         /* if(abs(arFunvals[i] - yobj) < 0.03) {//found = true;
+              cout<<"found breaking!"<<endl;
+              for(int j=0; j<5; j++) xnew[j] = pop[i][j];
 
+              ynew = arFunvals[i];
+              found = true;
+              break;
+          }*/
 
         // break;
           //}
@@ -816,10 +924,15 @@ if(abs(ynew - yobj) > EPS){
        // arFunvals[i] = fitfun(pop[i], (int) evo.get(CMAES<double>::Dimension));
 
     // for(int i=0; i<dim; i++) xnew[i]=*pop[i];
-     // if(!found)
+     // if(found) break;
+
        xnew =evo.getNew(CMAES<float>::XMean);
        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+       if(abs(ynew - yobj) < 0.018) {//found = true;
+           cout<<"found breaking!"<<endl;
 
+           break;
+       }
 
 
 
@@ -829,11 +942,7 @@ if(abs(ynew - yobj) > EPS){
       brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
       brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
 
-      if(abs(ynew - yobj) < 0.045) {//found = true;
-          cout<<"found breaking!"<<endl;
 
-          break;
-      }
 
       // update the search distribution used for sampleDistribution()
       evo.updateDistribution(arFunvals);
@@ -881,107 +990,27 @@ if(abs(ynew - yobj) > EPS)
 
    }
 
-    while (abs(ynew - yobj) > EPS || mu>EPS) {
 
-
-        float bar=evaluateBarLog (xnew,qlist,tol);
-
-
-       //if(!custom_isnan(bar))
-      // {
-//
-     //   brdfParam->xold[0]=xnew[0];
-     //   brdfParam->xold[1]=xnew[1];
-      //  brdfParam->xold[2]=xnew[2];
-      //  brdfParam->xold[3]=xnew[3];
-      //  brdfParam->xold[4]=xnew[4];
-      // }
-
-
-        float* grad = new float[Centers.rows()];
-        for (int i = 0; i < Centers.rows(); i++) {
-            grad[i] = 0.0;
-            for (int j = 0; j < Centers.cols(); j++) {
-                grad[i] += -2.0 * betas[j] * Theta[j + 1] * (xnew[i] - Centers(i, j)) * exp(-1.0 * betas[j] * normVec(xnew, Centers, j)) - mu*(evaluateBarDer(xnew,qlist,i));
-            }
-        }
-
-        float norm = 0.0;
-        for (int i = 0; i < Centers.rows(); i++)
-            norm += grad[i] * grad[i];
-
-        norm = sqrt(norm);
-
-        for (int i = 0; i < Centers.rows(); i++) {
-            grad[i] /= norm;
-            xnew[i] -= sgn(ynew - yobj) * alpha * grad[i];
-        }
-
-
-        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew)-mu*bar;
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
-
-        mu*=0.6f;
-        cout<<"ln(c(x))="<<bar<<endl;
-
-       // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
-
-    }
-   //  if(!inhull(xnew,qlist,tol)){
-    //     cout<<"not in hull"<<endl;
-
-     //     brdfParam->wasNotInHull = true;
-     //     brdfParam->xold[0]=  xnew[0];
-     //     brdfParam->xold[1]=  xnew[1];
-     //     brdfParam->xold[2]= xnew[2];
-     //     brdfParam->xold[3]= xnew[3];
-     //     brdfParam->xold[4]= xnew[4];
-     //     int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
-     //     xnew[0]=  brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-    //     xnew[1]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-    //      xnew[2]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-   //       xnew[3]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-   //       xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-3);
-
-
-    // }
-
-    // if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
-
-
-
-     cout<<"finished"<<endl;
-   //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
-
-     ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
-
-
-
-    brdfParam->newAttrVal = ynew;
 
 }*/
 
 //   if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
    cout<<"finished"<<endl;
  //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
-
-
-
-
 }
+
+
+
+
   brdfParam->newAttrVal = ynew;
 
     updateAttr(xnew);
 
    for (int i = 0; i < proj.rows(); i++)
     //    if (brdfParam->verOfColorSpace)
-           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+          // lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
    //     else
-          //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+           lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
 
     MatrixXf recon = brdfParam->Q * proj;
     brdfParam->proj = proj;
