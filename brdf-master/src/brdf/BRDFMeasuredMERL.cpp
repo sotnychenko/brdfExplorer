@@ -454,9 +454,9 @@ MatrixXf BRDFMeasuredMERL::rgb2Lab(MatrixXf proj)
         for (int j = 0; j < proj.cols(); j++)
             //  cout<<proj(i,j)<<" ";
            // if (brdfParam->verOfColorSpace)
-              //  rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+                rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
           //  else
-                rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+             //   rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
     }
 
     return Lab;
@@ -611,9 +611,9 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
 
     for (int i = 0; i < project.rows(); i++)
     //    if (brdfParam->verOfColorSpace)
-         //  lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
      //   else
-           lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+         //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
 
     brdfParam->Q = A;
     brdfParam->proj = project;
@@ -1008,9 +1008,9 @@ if(abs(ynew - yobj) > EPS)
 
    for (int i = 0; i < proj.rows(); i++)
     //    if (brdfParam->verOfColorSpace)
-          // lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
    //     else
-           lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+         //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
 
     MatrixXf recon = brdfParam->Q * proj;
     brdfParam->proj = proj;
