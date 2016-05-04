@@ -772,7 +772,7 @@ void BRDFMeasuredMERL::gradientDescend (float* xnew,float &ynew,float yobj,float
        // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
 
     }
-      if(!inhull(xnew,qlist,tol)){
+     /* if(!inhull(xnew,qlist,tol)){
     //     cout<<"not in hull"<<endl;
 
      //     brdfParam->wasNotInHull = true;
@@ -789,7 +789,7 @@ void BRDFMeasuredMERL::gradientDescend (float* xnew,float &ynew,float yobj,float
           xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
 
 
-     }
+     }*/
 
     // if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
 
