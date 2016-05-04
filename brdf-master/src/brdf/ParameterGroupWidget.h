@@ -109,7 +109,7 @@ private slots:
     void soloColorsButtonPushed(); 
     void saveParamsFileButtonPushed(); 
     void attrChanged( float,int );
-
+    void buttonResetPushed();
     
 
 private:
@@ -133,6 +133,7 @@ private:
     QPushButton* titleButton;
     QFrame* containerFrame;
     QVBoxLayout* containerLayout;
+    QPushButton* buttonReset;
     
     bool dirty;
 

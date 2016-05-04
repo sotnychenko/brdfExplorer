@@ -617,6 +617,7 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
 
     brdfParam->Q = A;
     brdfParam->proj = project;
+    brdfParam->InitProj=project;
 
     MatrixXf recon = A * project;
 
@@ -625,6 +626,48 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
             data[i * 3 + j] = recon(i, j) + relativeOffset[i];
 
     delete [] xnew;
+}
+void BRDFMeasuredMERL::reset(int numBRDFsam, const char* filename)
+{
+
+
+    name = std::string(filename);
+    numBRDFSamples = numBRDFsam;
+    brdfParam->proj = brdfParam->InitProj;
+
+    MatrixXf proj_Lab = rgb2Lab(brdfParam->proj);
+    float* xnew = new float[proj_Lab.rows()];
+
+    for (int i = 0; i < proj_Lab.rows(); i++)
+        xnew[i] = proj_Lab(i, 0) / 100.0;
+
+    updateAttr(xnew);
+
+   for (int i = 0; i < brdfParam->proj.rows(); i++)
+    //    if (brdfParam->verOfColorSpace)
+           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), brdfParam->proj(i, 0), brdfParam->proj(i, 1), brdfParam->proj(i, 2));
+   //     else
+         //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+
+    MatrixXf recon = brdfParam->Q * brdfParam->proj;
+
+
+    float* data = new float[brdfParam->Qsize * 3];
+
+    brdfData = new float[numBRDFSamples * 3];
+
+    for (int i = 0; i < brdfParam->Qsize; i++)
+        for (int j = 0; j < 3; j++)
+            data[i * 3 + j] = recon(i, j) + brdfParam->RelativeOffset[i];
+
+
+    UnmapBRDF(brdfParam->CosineMap, data, brdfParam->MaskMap, brdfParam->median, brdfParam->mask_size);
+
+    reshapeFinal();
+
+
+
+
 }
 
 double BRDFMeasuredMERL::dot(float* x, double* a, double* N)
@@ -841,16 +884,14 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
      float mu=150.0f;
      float mult =0.5f;
 
-bool found = false;
-
- if(abs(ynew - yobj) > EPS)
- {gradientDescend(xnew, ynew,yobj, mu, mult,betas,Theta,Centers, qlist,tol);
+bool directionChanged;
+while (abs(ynew-yobj)>EPS)
+{
+directionChanged = false;
+gradientDescend(xnew, ynew,yobj, mu, mult,betas,Theta,Centers, qlist,tol);
      cout<<"start"<<endl;
      cout<<"doing grad descend"<<endl;
       cout<<"grad finished on ynew"<<ynew<<endl;
- }
-
-
 
 if(abs(ynew - yobj) > EPS){
 
@@ -879,6 +920,7 @@ if(abs(ynew - yobj) > EPS){
    // std::cout << evo.sayHello() << std::endl;
  // bool found = false;
     // Iterate until stop criterion holds
+    float TempDirection;
     while(!evo.testForTermination())
     {
       // Generate lambda new search points, sample population
@@ -928,11 +970,20 @@ if(abs(ynew - yobj) > EPS){
 
        xnew =evo.getNew(CMAES<float>::XMean);
        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
-       if(abs(ynew - yobj) < 0.018) {//found = true;
-           cout<<"found breaking!"<<endl;
+       if(abs(ynew - yobj) < EPS) {//found = true;
+           cout<<"found breaking at !"<<ynew<<endl;
 
            break;
        }
+
+        float TempDirection = (ynew - yobj<0) ? -1.0: 1.0;
+
+        if(TempDirection!=direction) {
+            direction=TempDirection;
+            directionChanged = true;
+            cout<<"cmaes changing direction on "<<ynew<<endl;
+            break;
+        }
 
 
 
@@ -995,11 +1046,15 @@ if(abs(ynew - yobj) > EPS)
 }*/
 
 //   if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
+
+
    cout<<"finished"<<endl;
  //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
 }
 
+if(!directionChanged) break;
 
+}
 
 
   brdfParam->newAttrVal = ynew;

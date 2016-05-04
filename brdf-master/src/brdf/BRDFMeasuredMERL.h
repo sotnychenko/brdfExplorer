@@ -33,7 +33,7 @@ public:
 
     static float evaluateFuncApproxRBFN(Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, float* betas, float* Theta, bool normalize, float* input);
     static MatrixXf rgb2Lab(MatrixXf proj);
-
+    void reset(int numBRDFsam, const char* filename);
 
 protected:
     virtual void initGL();

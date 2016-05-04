@@ -138,6 +138,15 @@ ParameterGroupWidget::ParameterGroupWidget( ParameterWindow* pWindow, BRDFBase* 
    // colorSpaceBox->setChecked( false );
   //  cmdLayout->addWidget( colorSpaceBox );
    // connect( colorSpaceBox, SIGNAL(stateChanged(int)), this, SLOT(paramChanged()) );
+    buttonReset = new QPushButton("reset", this);
+    // add the solo button
+    buttonReset->setToolTip( "resets the brdf projection" );
+    connect( buttonReset, SIGNAL(clicked()), this, SLOT(buttonResetPushed()) );
+
+    buttonReset->setFixedWidth( 35 );
+    buttonReset->setFixedHeight( 25 );
+    cmdLayout->addWidget( buttonReset,0,Qt::AlignRight );
+
    }
 
 
@@ -226,7 +235,32 @@ ParameterGroupWidget::~ParameterGroupWidget()
     delete brdf;
 }
 
+void ParameterGroupWidget::buttonResetPushed()
 
+{
+
+
+
+
+     BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
+
+     mb->brdfParam=brdf->brdfParam;
+  mb->reset( brdf->numBRDFSamples,brdf->getName().c_str());
+       brdf->wasProjected =false;
+   updateAttrSliders( mb->brdfParam);
+
+delete brdf;
+brdf=mb;
+brdf->numBRDFSamples=mb->numBRDFSamples;
+brdf->brdfParam=mb->brdfParam;
+brdf->wasProjected =true;
+
+for(int i=0; i<brdf->brdfParam->paths.size();i++)
+ brdf->brdfParam->paths.at(i).alpha.clear();
+
+paramChanged();
+
+}
 
 void ParameterGroupWidget::titleButtonPushed()
 {

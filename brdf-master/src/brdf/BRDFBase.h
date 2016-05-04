@@ -113,6 +113,7 @@ struct brdfMERLparam
 {
    MatrixXf Q;
    MatrixXf proj;
+   MatrixXf InitProj;
    bool wasNotInHull;
    float *xold;
    int mask_size;
