@@ -208,6 +208,7 @@ public:
     void disableShader( int shaderType );
     
     void saveParamsFile( const char* filename );
+    void saveBRDF( const char* filename );
     
     virtual bool hasISFunction() { return false; }
 

@@ -57,6 +57,9 @@ infringement.
 #include "DGLShader.h"
 #include "Paths.h"
 
+#define BRDF_SAMPLING_RES_THETA_H 90
+#define BRDF_SAMPLING_RES_THETA_D 90
+#define BRDF_SAMPLING_RES_PHI_D 360
 
 
 BRDFBase::BRDFBase() : initializedGL(false)
@@ -562,7 +565,41 @@ void BRDFBase::syncParametersIntoBRDF( BRDFBase* newBRDF )
         }
     }
 }
+void BRDFBase::saveBRDF( const char* filename )
+{
+    FILE* out = fopen( filename, "wb" );
+    if( !out )
+        return;
 
+
+
+    BRDFMeasuredMERL mb;
+
+    mb.brdfParam=this->brdfParam;
+    mb.projectShort( this->numBRDFSamples,this->getName().c_str());
+    float *data = mb.getBRDFData();
+
+    double* doubleArray = new double[3*this->numBRDFSamples];
+    for (int i = 0 ; i < 3*this->numBRDFSamples; i++)
+        doubleArray[i] = (double) data[i];
+
+
+    //write dimensions
+    int dim [3] = {BRDF_SAMPLING_RES_THETA_H,BRDF_SAMPLING_RES_THETA_D,BRDF_SAMPLING_RES_PHI_D/2};
+
+    fwrite(dim,sizeof(int),3, out);
+     //writeData
+    fwrite(doubleArray,sizeof(double),3*this->numBRDFSamples,out);
+
+
+
+    delete [] doubleArray;
+
+
+
+
+    fclose( out );
+}
 
 void BRDFBase::saveParamsFile( const char* filename )
 {   

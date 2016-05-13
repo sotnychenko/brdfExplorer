@@ -188,9 +188,15 @@ ParameterGroupWidget::ParameterGroupWidget( ParameterWindow* pWindow, BRDFBase* 
     QPixmap* resetPixmap = new QPixmap((getImagesPath() + "resetSmall.png").c_str());
     resetAction->setIcon( QIcon(*resetPixmap) );
     connect( resetAction, SIGNAL(triggered()), this, SLOT(resetButtonPushed()) );
+
+
+    QAction* saveBRDFAction = optionsMenu->addAction( "Save BRDF..." );
+    QPixmap* folderPixmap = new QPixmap((getImagesPath() + "folderSmall.png").c_str());
+    saveBRDFAction->setIcon( QIcon(*folderPixmap) );
+    connect( saveBRDFAction, SIGNAL(triggered()), this, SLOT(saveBRDFButtonPushed()) );
     
     QAction* saveAction = optionsMenu->addAction( "Save Parameters File..." );
-    QPixmap* folderPixmap = new QPixmap((getImagesPath() + "folderSmall.png").c_str());
+
     saveAction->setIcon( QIcon(*folderPixmap) );
     connect( saveAction, SIGNAL(triggered()), this, SLOT(saveParamsFileButtonPushed()) );
     
@@ -623,7 +629,31 @@ void ParameterGroupWidget::soloColorsButtonPushed()
     }
 }
 
+void ParameterGroupWidget::saveBRDFButtonPushed()
+{
+    // sanity check - shouldn't happen
 
+    if( !brdf )
+        return;
+   if(!brdf->wasProjected)
+        return;
+
+    // need to come up with a default name for this save file
+    QString shortBRDFName = titleButton->text().trimmed();
+    int dotIndex = shortBRDFName.lastIndexOf( "." );
+    if( dotIndex != -1 )
+        shortBRDFName = shortBRDFName.left( dotIndex );
+
+
+    // get a save file name
+    QString fileName = QFileDialog::getSaveFileName(this, "Save BRDF binary File",
+                                                          QString("./") + shortBRDFName + QString(".binary"),
+                                                          "MERL BRDF (*.binary)" );
+
+    // if we got a filename back... save it
+    if( fileName.length() )
+        brdf->saveBRDF( fileName.toAscii().constData() );
+}
 void ParameterGroupWidget::saveParamsFileButtonPushed()
 {   
     // sanity check - shouldn't happen

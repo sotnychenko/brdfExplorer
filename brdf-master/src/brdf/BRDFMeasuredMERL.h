@@ -34,6 +34,7 @@ public:
     static float evaluateFuncApproxRBFN(Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, float* betas, float* Theta, bool normalize, float* input);
     static MatrixXf rgb2Lab(MatrixXf proj);
     void reset(int numBRDFsam, const char* filename);
+    float* getBRDFData();
 
 protected:
     virtual void initGL();
@@ -75,7 +76,8 @@ private:
     static void rgb2labv2(float var_R, float var_G, float var_B, float& l_s, float& a_s, float& b_s);
     static float sgn(float val);
 
-    void gradientDescend (float* xnew,float &ynew,float yobj,float mu,float mult, float* betas, float* Theta,Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> &Centers,QhullFacetList qlist,float tol);
+    void gradientDescendLogB (float* xnew,float &ynew,float yobj,float mu,float mult, float* betas, float* Theta,Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> &Centers,QhullFacetList qlist,float tol);
+    void gradientDescend (float* xnew,float &ynew,float yobj, float* betas, float* Theta,Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> &Centers,QhullFacetList qlist,float tol);
 
      static void toyusrf_(int    *Status, int *n,    double x[],
               int    *needF,  int *neF,  double F[],

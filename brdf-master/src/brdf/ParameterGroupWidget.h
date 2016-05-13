@@ -108,6 +108,7 @@ private slots:
     void soloButtonPushed();
     void soloColorsButtonPushed(); 
     void saveParamsFileButtonPushed(); 
+    void saveBRDFButtonPushed();
     void attrChanged( float,int );
     void buttonResetPushed();
     
