@@ -993,7 +993,7 @@ gradientDescendLogB(xnew, ynew,yobj, mu, mult,betas,Theta,Centers, qlist,tol);
 while (fabs(ynew-yobj)>EPS)
 {
 
-
+yold = ynew;
 directionChanged = false;
 
 cout<<"doing grad descend"<<endl;
@@ -1029,6 +1029,7 @@ if(abs(ynew - yobj) > EPS){
     // Iterate until stop criterion holds
     float TempDirection;
     float yold;
+
     while(!evo.testForTermination())
     {
         yold=ynew;
@@ -1108,6 +1109,8 @@ if(abs(ynew - yobj) > EPS){
       //if(fabs(ynew-yold)>0.01) break;
 
     //  break;
+    //  if(iter>1) break;
+    //  iter++;
     }
     cout<<"cmaes finished on ynew"<<ynew<<endl;
    // std::cout << "Stop:" << std::endl << evo.getStopMessage();
