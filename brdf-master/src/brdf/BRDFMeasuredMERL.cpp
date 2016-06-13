@@ -29,8 +29,6 @@
 #include <stdlib.h>
 #include "cmaes.h"
 
-
-
 using std::cerr;
 using std::cin;
 using std::cout;
@@ -47,15 +45,13 @@ using orgQhull::QhullVertex;
 using orgQhull::QhullVertexSet;
 using orgQhull::QhullLinkedList;
 
-
 using namespace Eigen;
 
 #define BRDF_SAMPLING_RES_THETA_H 90
 #define BRDF_SAMPLING_RES_THETA_D 90
 #define BRDF_SAMPLING_RES_PHI_D 360
 
-
-#define EPS 0.004
+#define EPS 0.005
 
 bool custom_isnan(float var)
 {
@@ -101,7 +97,7 @@ void BRDFMeasuredMERL::setName(string n)
 
 BRDFMeasuredMERL::~BRDFMeasuredMERL()
 {
-    delete [] brdfData;
+    delete[] brdfData;
     glBindBuffer(GL_TEXTURE_BUFFER_EXT, tbo);
     glDeleteBuffers(1, &tbo);
 }
@@ -128,7 +124,6 @@ bool BRDFMeasuredMERL::loadMERLData(const char* filename)
         return false;
     }
 
-
     numBRDFSamples = dims[0] * dims[1] * dims[2];
     if (numBRDFSamples != BRDF_SAMPLING_RES_THETA_H * BRDF_SAMPLING_RES_THETA_D * BRDF_SAMPLING_RES_PHI_D / 2) {
         fprintf(stderr, "Dimensions don't match\n");
@@ -144,7 +139,6 @@ bool BRDFMeasuredMERL::loadMERLData(const char* filename)
         return false;
     }
     fclose(f);
-
 
     // now transform it to RGBA floats
     brdfData = new float[numBRDFSamples * 3];
@@ -229,7 +223,7 @@ void BRDFMeasuredMERL::reshapeFinal()
                 for (int l = 0; l < BRDF_SAMPLING_RES_PHI_D / 2; l++)
                     brdfData[ind++] = reshaped[l][j][k][i];
 
-    free(brdf);
+    delete[] brdf;
 }
 
 bool BRDFMeasuredMERL::readBrdf(const char* filename)
@@ -281,7 +275,7 @@ bool BRDFMeasuredMERL::readBrdf(const char* filename)
         brdfData[i * 3 + 2] *= 1.66 / 1500;
     }
 
-    free(brdf);
+    delete[] brdf;
 
     return true;
 }
@@ -458,10 +452,10 @@ MatrixXf BRDFMeasuredMERL::rgb2Lab(MatrixXf proj)
     for (int i = 0; i < proj.rows(); i++) {
         for (int j = 0; j < proj.cols(); j++)
             //  cout<<proj(i,j)<<" ";
-           // if (brdfParam->verOfColorSpace)
-                rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
-          //  else
-             //   rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+            // if (brdfParam->verOfColorSpace)
+            rgb2labv2(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
+        //  else
+        //   rgb2lab(proj(i, 0), proj(i, 1), proj(i, 2), Lab(i, 0), Lab(i, 1), Lab(i, 2));
     }
 
     return Lab;
@@ -564,15 +558,12 @@ void BRDFMeasuredMERL::UnmapBRDF(double* CosineMap, float* mappedData, bool* Mas
         else
             brdfData[i * 3 + 0] = brdfData[i * 3 + 1] = brdfData[i * 3 + 2] = -1.0;
 
-    free(mappedData);
+    delete[] mappedData;
 }
 
 void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relativeOffset, int Qsize)
 
 {
-
-
-
 
     int numC = 5;
     Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> b;
@@ -615,14 +606,14 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
     updateAttr(xnew);
 
     for (int i = 0; i < project.rows(); i++)
-    //    if (brdfParam->verOfColorSpace)
-           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
-     //   else
-         //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+        //    if (brdfParam->verOfColorSpace)
+        lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
+    //   else
+    //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), project(i, 0), project(i, 1), project(i, 2));
     brdfParam->newAttrVal = brdfParam->attrValues[0];
     brdfParam->Q = A;
     brdfParam->proj = project;
-    brdfParam->InitProj=project;
+    brdfParam->InitProj = project;
 
     MatrixXf recon = A * project;
 
@@ -630,11 +621,10 @@ void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relative
         for (int j = 0; j < 3; j++)
             data[i * 3 + j] = recon(i, j) + relativeOffset[i];
 
-    delete [] xnew;
+    delete[] xnew;
 }
 void BRDFMeasuredMERL::reset(int numBRDFsam, const char* filename)
 {
-
 
     name = std::string(filename);
     numBRDFSamples = numBRDFsam;
@@ -648,14 +638,13 @@ void BRDFMeasuredMERL::reset(int numBRDFsam, const char* filename)
 
     updateAttr(xnew);
 
-   for (int i = 0; i < brdfParam->proj.rows(); i++)
-    //    if (brdfParam->verOfColorSpace)
-           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), brdfParam->proj(i, 0), brdfParam->proj(i, 1), brdfParam->proj(i, 2));
-   //     else
-         //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+    for (int i = 0; i < brdfParam->proj.rows(); i++)
+        //    if (brdfParam->verOfColorSpace)
+        lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), brdfParam->proj(i, 0), brdfParam->proj(i, 1), brdfParam->proj(i, 2));
+    //     else
+    //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
 
     MatrixXf recon = brdfParam->Q * brdfParam->proj;
-
 
     float* data = new float[brdfParam->Qsize * 3];
 
@@ -665,78 +654,68 @@ void BRDFMeasuredMERL::reset(int numBRDFsam, const char* filename)
         for (int j = 0; j < 3; j++)
             data[i * 3 + j] = recon(i, j) + brdfParam->RelativeOffset[i];
 
-
     UnmapBRDF(brdfParam->CosineMap, data, brdfParam->MaskMap, brdfParam->median, brdfParam->mask_size);
 
     reshapeFinal();
-
-
-
-
 }
 
 double BRDFMeasuredMERL::dot(float* x, double* a, double* N)
 {
     double result = 0.0;
-    for(int i=0;i<5; i++)
-        result+=(x[i]-a[i])*(-1.0)*N[i];
+    for (int i = 0; i < 5; i++)
+        result += (x[i] - a[i]) * (-1.0) * N[i];
 
     return result;
 }
-float BRDFMeasuredMERL::evaluateBarLog(float* x,QhullFacetList& qlist,double tol)
+float BRDFMeasuredMERL::evaluateBarLog(float* x, QhullFacetList& qlist, double tol)
 {
     float result = tol;
-    for( QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet!=qlist.end(); facet++ )
-        result+= log(dot(x,facet->vertices().at(1).point().coordinates(),facet->hyperplane().coordinates()));
-
+    for (QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet != qlist.end(); facet++)
+        result += log(dot(x, facet->vertices().at(1).point().coordinates(), facet->hyperplane().coordinates()));
 
     return result;
-
 }
 
-
-float BRDFMeasuredMERL::evaluateBarDer(float* x,QhullFacetList& qlist, int grad)
+float BRDFMeasuredMERL::evaluateBarDer(float* x, QhullFacetList& qlist, int grad)
 {
 
     float der = 0.0;
-    for( QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet!=qlist.end(); facet++ )
-     {
+    for (QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet != qlist.end(); facet++) {
 
-        der+=(-1.0)*facet->hyperplane().coordinates()[grad]/(dot(x,facet->vertices().at(1).point().coordinates(),facet->hyperplane().coordinates())+EPS);
-      }
+        der += (-1.0) * facet->hyperplane().coordinates()[grad] / (dot(x, facet->vertices().at(1).point().coordinates(), facet->hyperplane().coordinates()) + EPS);
+    }
 
     return der;
-
 }
 
-bool BRDFMeasuredMERL::inhull(float* x,QhullFacetList& qlist,double tol)
+bool BRDFMeasuredMERL::inhull(float* x, QhullFacetList& qlist, double tol)
 {
-     bool inside = true;
+    bool inside = true;
 
-    for( QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet!=qlist.end(); facet++ )
-    {
+    for (QhullLinkedList<QhullFacet>::iterator facet = qlist.begin(); facet != qlist.end(); facet++) {
 
-       if(dot(x,facet->vertices().at(1).point().coordinates(),facet->hyperplane().coordinates())<-1.0*tol)
-          { inside = false; break;}
-
+        if (dot(x, facet->vertices().at(1).point().coordinates(), facet->hyperplane().coordinates()) < -1.0 * tol) {
+            inside = false;
+            break;
+        }
     }
 
     return inside;
 }
 
-void BRDFMeasuredMERL::gradientDescend (float* xnew,float &ynew,float yobj, float* betas, float* Theta,Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> &Centers,QhullFacetList qlist,float tol)
+void BRDFMeasuredMERL::gradientDescend(float* xnew, float& ynew, float yobj, float* betas, float* Theta, Eigen::Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, QhullFacetList qlist, float tol)
 {
-   // float bar;
+    // float bar;
     float alpha = 0.01;
     float* grad = new float[Centers.rows()];
 
-    while (abs(ynew - yobj) > EPS ) {
+    while (abs(ynew - yobj) > EPS) {
 
-        brdfParam->xold[0]=xnew[0];
-        brdfParam->xold[1]=xnew[1];
-        brdfParam->xold[2]=xnew[2];
-        brdfParam->xold[3]=xnew[3];
-        brdfParam->xold[4]=xnew[4];
+        brdfParam->xold[0] = xnew[0];
+        brdfParam->xold[1] = xnew[1];
+        brdfParam->xold[2] = xnew[2];
+        brdfParam->xold[3] = xnew[3];
+        brdfParam->xold[4] = xnew[4];
 
         for (int i = 0; i < Centers.rows(); i++) {
             grad[i] = 0.0;
@@ -755,64 +734,55 @@ void BRDFMeasuredMERL::gradientDescend (float* xnew,float &ynew,float yobj, floa
             grad[i] /= norm;
             xnew[i] -= sgn(ynew - yobj) * alpha * grad[i];
         }
-     if(!inhull(xnew,qlist,tol)){
+        if (!inhull(xnew, qlist, tol)) {
 
-         xnew[0] =brdfParam->xold[0];
-         xnew[1] = brdfParam->xold[1];
-         xnew[2] =brdfParam->xold[2];
-         xnew[3] = brdfParam->xold[3];
-         xnew[4] = brdfParam->xold[4];
-         break;
+            xnew[0] = brdfParam->xold[0];
+            xnew[1] = brdfParam->xold[1];
+            xnew[2] = brdfParam->xold[2];
+            xnew[3] = brdfParam->xold[3];
+            xnew[4] = brdfParam->xold[4];
+            break;
+        }
 
-
-     }
-
-        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+        ynew = evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
-
-
-
     }
 
-
-    delete []grad;
+    delete[] grad;
 }
 
-void BRDFMeasuredMERL::gradientDescendLogB (float* xnew,float &ynew,float yobj,float mu,float mult, float* betas, float* Theta,Eigen::Matrix<float, Dynamic, Dynamic, RowMajor> &Centers,QhullFacetList qlist,float tol)
+void BRDFMeasuredMERL::gradientDescendLogB(float* xnew, float& ynew, float yobj, float mu, float mult, float* betas, float* Theta, Eigen::Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, QhullFacetList qlist, float tol)
 {
     float bar;
     float alpha = 0.01;
     float* grad = new float[Centers.rows()];
-    brdfParam->xold[0]=xnew[0];
-    brdfParam->xold[1]=xnew[1];
-    brdfParam->xold[2]=xnew[2];
-    brdfParam->xold[3]=xnew[3];
-    brdfParam->xold[4]=xnew[4];
+    brdfParam->xold[0] = xnew[0];
+    brdfParam->xold[1] = xnew[1];
+    brdfParam->xold[2] = xnew[2];
+    brdfParam->xold[3] = xnew[3];
+    brdfParam->xold[4] = xnew[4];
     //float yold=ynew;
-   // float direction = ynew - yobj;
-    while (abs(ynew - yobj) > EPS || mu>EPS) {
+    // float direction = ynew - yobj;
+    while (abs(ynew - yobj) > EPS || mu > EPS) {
 
-        bar=evaluateBarLog (xnew,qlist,tol);
+        bar = evaluateBarLog(xnew, qlist, tol);
 
-       if(!custom_isnan(bar))
-       {
-        brdfParam->xold[0]=xnew[0];
-        brdfParam->xold[1]=xnew[1];
-        brdfParam->xold[2]=xnew[2];
-        brdfParam->xold[3]=xnew[3];
-        brdfParam->xold[4]=xnew[4];
-       }
-
-
+        if (!custom_isnan(bar)) {
+            brdfParam->xold[0] = xnew[0];
+            brdfParam->xold[1] = xnew[1];
+            brdfParam->xold[2] = xnew[2];
+            brdfParam->xold[3] = xnew[3];
+            brdfParam->xold[4] = xnew[4];
+        }
 
         for (int i = 0; i < Centers.rows(); i++) {
             grad[i] = 0.0;
             for (int j = 0; j < Centers.cols(); j++) {
-                grad[i] += -2.0 * betas[j] * Theta[j + 1] * (xnew[i] - Centers(i, j)) * exp(-1.0 * betas[j] * normVec(xnew, Centers, j)) - mu*(evaluateBarDer(xnew,qlist,i));
+                grad[i] += -2.0 * betas[j] * Theta[j + 1] * (xnew[i] - Centers(i, j)) * exp(-1.0 * betas[j] * normVec(xnew, Centers, j)) - mu * (evaluateBarDer(xnew, qlist, i));
             }
         }
 
@@ -827,10 +797,9 @@ void BRDFMeasuredMERL::gradientDescendLogB (float* xnew,float &ynew,float yobj,f
             xnew[i] -= sgn(ynew - yobj) * alpha * grad[i];
         }
 
+        ynew = evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew) - mu * bar;
 
-        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew)-mu*bar;
-
-       /* if(sgn(direction)!=sgn(yold-ynew))
+        /* if(sgn(direction)!=sgn(yold-ynew))
 
         {
             xnew[0] =brdfParam->xold[0];
@@ -841,8 +810,7 @@ void BRDFMeasuredMERL::gradientDescendLogB (float* xnew,float &ynew,float yobj,f
 
             break;
         }*/
-       // ynew-=mu*bar;
-
+        // ynew-=mu*bar;
 
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
@@ -850,41 +818,40 @@ void BRDFMeasuredMERL::gradientDescendLogB (float* xnew,float &ynew,float yobj,f
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
 
-        mu*=mult;
-       // cout<<"ln(c(x))="<<bar<<endl;
+        mu *= mult;
+        // cout<<"ln(c(x))="<<bar<<endl;
 
-       // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
-
+        // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
     }
-      if(!inhull(xnew,qlist,tol)){
-    //     cout<<"not in hull"<<endl;
-     //     brdfParam->wasNotInHull = true;
-         xnew[0] =brdfParam->xold[0]  ;
-         xnew[1] = brdfParam->xold[1];
-         xnew[2] =brdfParam->xold[2];
-         xnew[3] = brdfParam->xold[3];
-         xnew[4] = brdfParam->xold[4];
-         /* int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
+    if (!inhull(xnew, qlist, tol)) {
+        //     cout<<"not in hull"<<endl;
+        //     brdfParam->wasNotInHull = true;
+        xnew[0] = brdfParam->xold[0];
+        xnew[1] = brdfParam->xold[1];
+        xnew[2] = brdfParam->xold[2];
+        xnew[3] = brdfParam->xold[3];
+        xnew[4] = brdfParam->xold[4];
+        /* int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
           xnew[0]=  brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
           xnew[1]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
           xnew[2]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
           xnew[3]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
           xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);*/
-     }
+    }
 
-     if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
+    if (inhull(xnew, qlist, tol))
+        cout << "now in hull!" << endl;
 
-  ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
+    ynew = evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
 
     // cout<<"finished"<<endl;
-   //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
+    //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
 
     // ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
 
+    //brdfParam->newAttrVal = ynew;
 
-     //brdfParam->newAttrVal = ynew;
-
-    delete []grad;
+    delete[] grad;
 }
 
 float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
@@ -905,9 +872,6 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
     for (int i = 0; i < arr_mv1.shape[0] * arr_mv1.shape[1]; i++)
         Centers.data()[i] = mv1[i];
 
-
-
-
     arr_mv1 = brdfParam->npzFiles.at(brdfParam->idOfVal)["betas"];
     double* betasTemp = reinterpret_cast<double*>(arr_mv1.data);
     float* betas = new float[arr_mv1.shape[0] * arr_mv1.shape[1]];
@@ -921,258 +885,61 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
     for (int i = 0; i < arr_mv1.shape[0] * arr_mv1.shape[1]; i++)
         Theta[i] = ThetaTemp[i];
 
-
-
-
-
-
     float ynew = evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
 
-    if(brdfParam->paths.at(brdfParam->idOfVal).alpha.size()==0) {
+    if (brdfParam->paths.at(brdfParam->idOfVal).alpha.size() == 0) {
         brdfParam->paths.at(brdfParam->idOfVal).alpha.resize(5);
-        /*brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
-        brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);*/
     }
 
     float yobj = brdfParam->newAttrVal;
+
     float alpha = 0.01;
 
     cnpy::npz_t my_npz = cnpy::npz_load("hull.npz");
     arr_mv1 = my_npz["P"];
     double* PData = reinterpret_cast<double*>(arr_mv1.data);
 
- //   Matrix<double, Dynamic, Dynamic, RowMajor> hull;
-  //  hull.resize(arr_mv1.shape[1], arr_mv1.shape[0]);
-  //  for (int i = 0; i < arr_mv1.shape[0] * arr_mv1.shape[1]; i++)
-  //      hull.data()[i] = PData[i];
-
-
-   // double tol =1.e-12*(hull.cwiseAbs().mean());
-
     Qhull qhull;
     RboxPoints rbox;
     rbox.setDimension(5);
-    rbox.append(arr_mv1.shape[1]*arr_mv1.shape[0],PData);
+    rbox.append(arr_mv1.shape[1] * arr_mv1.shape[0], PData);
 
     qhull.runQhull(rbox, "");
-    QhullFacetList qlist =qhull.facetList();
+    QhullFacetList qlist = qhull.facetList();
 
+    float tol = 0.0001;
+    float mu = 150.0f;
+    float mult = 0.5f;
 
-     float tol =0.0001;
-     float mu=150.0f;
-     float mult =0.5f;
+    float yold = -1.0;
+    cout << "start************" << endl;
+    if (fabs(ynew - yobj) > EPS) {
+        while (fabs(ynew - yobj) > EPS && fabs(yold - ynew) > EPS) {
+            yold = ynew;
 
-bool directionChanged;
-float yold=-1.0;
-cout<<"start************"<<endl;
-if(fabs(ynew-yobj)>0.006){
-while (fabs(ynew-yobj)>EPS && fabs(yold-ynew)>EPS)
-{
-yold = ynew;
-if(fabs(ynew-yobj)>EPS){
-directionChanged = false;
+            cout << "doing grad descend" << endl;
+            gradientDescend(xnew, ynew, yobj, betas, Theta, Centers, qlist, tol);
 
-cout<<"doing grad descend"<<endl;
-gradientDescend(xnew, ynew,yobj,betas,Theta,Centers, qlist,tol);
+            cout << "grad finished on ynew" << ynew << endl;
+            if (fabs(ynew - yobj) > EPS) {
+                cout << "doing grad descendLogB" << endl;
+                gradientDescendLogB(xnew, ynew, yobj, mu, mult, betas, Theta, Centers, qlist, tol);
 
- cout<<"grad finished on ynew"<<ynew<<endl;
- if(fabs(ynew - yobj) > EPS){
-  cout<<"doing grad descendLogB"<<endl;
-gradientDescendLogB(xnew, ynew,yobj, mu, mult,betas,Theta,Centers, qlist,tol);
-
-      cout<<"gradLogB finished on ynew"<<ynew<<endl;
- }
-
-}
-
-}
-
-while (fabs(ynew-yobj)>EPS)
-{
-
-yold = ynew;
-directionChanged = false;
-
-cout<<"doing grad descend"<<endl;
-gradientDescend(xnew, ynew,yobj,betas,Theta,Centers, qlist,tol);
-
-
-if(abs(ynew - yobj) > EPS){
-
-   cout<<" continue with cmaes"<<endl;
-
-  // cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
-  float direction = (ynew - yobj<0) ? -1.0: 1.0;
-
-   CMAES<float> evo;
-   float *arFunvals, *const*pop, *xfinal;
-
-
-    // Initialize everything
-    const int dim = 5;
-
-
-    float xstart[dim];
-    for(int i=0; i<dim; i++) xstart[i] = xnew[i];
-    float stddev[dim];
-    for(int i=0; i<dim; i++) stddev[i] = 0.25;
-    Parameters<float> parameters;
-    // TODO Adjust parameters here
-    parameters.init(dim, xstart, stddev);
-    arFunvals = evo.init(parameters);
-
-   // std::cout << evo.sayHello() << std::endl;
- // bool found = false;
-    // Iterate until stop criterion holds
-    float TempDirection;
-    float yold;
-
-    while(!evo.testForTermination())
-    {
-        yold=ynew;
-      // Generate lambda new search points, sample population
-      pop = evo.samplePopulation(); // Do not change content of pop
-
-      /* Here you may resample each solution point pop[i] until it
-         becomes feasible, e.g. for box constraints (variable
-         boundaries). function is_feasible(...) needs to be
-         user-defined.
-         Assumptions: the feasible domain is convex, the optimum is
-         not on (or very close to) the domain boundary, initialX is
-         feasible and initialStandardDeviations are sufficiently small
-         to prevent quasi-infinite looping.
-      */
-       for (int i = 0; i < evo.get(CMAES<float>::PopSize); ++i)
-           while (!inhull(pop[i],qlist,tol))
-             evo.reSampleSingle(i);
-
-
-      // evaluate the new search points using fitfun from above
-      for (int i = 0; i < evo.get(CMAES<float>::Lambda); ++i)
-        {
-          arFunvals[i]=  direction*evaluateFuncApproxRBFN(Centers, betas, Theta, true, pop[i]);
-
-        //  if(abs(abs(arFunvals[i]) - yobj) < EPS) {
-     // found = true;
-      // cout<<"found breaking!"<<endl;
-     //for(int j=0; j<dim; j++) xnew[i]=pop[i][j];
-
-         /* if(abs(arFunvals[i] - yobj) < 0.03) {//found = true;
-              cout<<"found breaking!"<<endl;
-              for(int j=0; j<5; j++) xnew[j] = pop[i][j];
-              ynew = arFunvals[i];
-              found = true;
-              break;
-          }*/
-
-        // break;
-          //}
-
-      }
-       // arFunvals[i] = fitfun(pop[i], (int) evo.get(CMAES<double>::Dimension));
-
-    // for(int i=0; i<dim; i++) xnew[i]=*pop[i];
-     // if(found) break;
-
-       xnew =evo.getNew(CMAES<float>::XMean);
-       ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
-       if(abs(ynew - yobj) < EPS) {//found = true;
-           cout<<"found breaking at !"<<ynew<<endl;
-
-           break;
-       }
-
-        float TempDirection = (ynew - yobj<0) ? -1.0: 1.0;
-
-        if(TempDirection!=direction) {
-            direction=TempDirection;
-            directionChanged = true;
-            cout<<"cmaes changing direction on "<<ynew<<endl;
-            break;
+                cout << "gradLogB finished on ynew" << ynew << endl;
+            }
         }
-
-
-
-      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
-      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
-      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xnew[2]);
-      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xnew[3]);
-      brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
-
-
-
-      // update the search distribution used for sampleDistribution()
-      evo.updateDistribution(arFunvals);
-      //if(fabs(ynew-yold)>0.01) break;
-
-    //  break;
-    //  if(iter>1) break;
-    //  iter++;
     }
-    cout<<"cmaes finished on ynew"<<ynew<<endl;
-   // std::cout << "Stop:" << std::endl << evo.getStopMessage();
-   // evo.writeToFile(CMAES<float>::WKResume, "resumeevo1.dat"); // write resumable state of CMA-ES
 
-    // get best estimator for the optimum, xmean
-    /*if(!found){
-    xfinal = evo.getNew(CMAES<float>::XMean); // "XBestEver" might be used as well
-    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xfinal[0]);
-    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xfinal[1]);
-    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(2).push_back(xfinal[2]);
-    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(3).push_back(xfinal[3]);
-    brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xfinal[4]);
-   for(int i=0; i<dim; i++) xnew[i]=xfinal[i];
-   delete[] xfinal;
-    }*/
-
-    // do something with final solution and finally release memory
-
-
-
-
-/*
-if(abs(ynew - yobj) > EPS)
-{
-   if(!inhull(xnew,qlist,tol)){
-       cout<<"was not in hull, changing to random"<<endl;
-         //brdfParam->wasNotInHull = false;
-    while(!inhull(xnew,qlist,tol))
-    {
-        xnew[0]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        xnew[1]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        xnew[2]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        xnew[3]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        xnew[4]= static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
-    }
-   }
-}*/
-
-//   if(inhull(xnew,qlist,tol)) cout<<"now in hull!"<<endl;
-
-
-
- //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
-}
-
-if(!directionChanged) break;
-
-
-}
-}
-cout<<"finished"<<endl;
-  brdfParam->newAttrVal = ynew;
+    cout << "finished" << endl;
+    brdfParam->newAttrVal = ynew;
 
     updateAttr(xnew);
 
-   for (int i = 0; i < proj.rows(); i++)
-    //    if (brdfParam->verOfColorSpace)
-           lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
-   //     else
-         //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+    for (int i = 0; i < proj.rows(); i++)
+        //    if (brdfParam->verOfColorSpace)
+        lab2rgbv2(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
+    //     else
+    //  lab2rgb(xnew[i] * 100.0, proj_Lab(i, 1), proj_Lab(i, 2), proj(i, 0), proj(i, 1), proj(i, 2));
 
     MatrixXf recon = brdfParam->Q * proj;
     brdfParam->proj = proj;
@@ -1185,15 +952,14 @@ cout<<"finished"<<endl;
         for (int j = 0; j < 3; j++)
             data[i * 3 + j] = recon(i, j) + brdfParam->RelativeOffset[i];
 
-
-
-    delete [] xnew;
-
+    delete[] xnew;
 
     return data;
 }
 float* BRDFMeasuredMERL::getBRDFData()
-{ return brdfData;}
+{
+    return brdfData;
+}
 
 void BRDFMeasuredMERL::projectShort(int numBRDFsam, const char* filename)
 {
@@ -1214,7 +980,7 @@ void BRDFMeasuredMERL::project(const char* filename)
     name = std::string(filename);
     brdfParam->attrValues = new float[brdfParam->npzFiles.size()];
     brdfParam->paths.resize(brdfParam->npzFiles.size());
-    brdfParam->idOfVal=0;
+    brdfParam->idOfVal = 0;
     brdfParam->wasNotInHull = false;
     brdfParam->xold = new float[5];
 
