@@ -68,7 +68,7 @@ BRDFMeasuredMERL::BRDFMeasuredMERL()
     : brdfData(NULL)
 {
     std::string path = (getShaderTemplatesPath() + "measured.func");
-    brdfParam = new brdfMERLparam;
+    brdfParam =NULL;
     // read the shader
     std::ifstream ifs(path.c_str());
     std::string temp;
@@ -79,6 +79,7 @@ BRDFMeasuredMERL::BRDFMeasuredMERL()
 BRDFMeasuredMERL::BRDFMeasuredMERL(float* data, string fileName, int numSamples)
 
 {
+    brdfParam =NULL;
     name = fileName;
     numBRDFSamples = numSamples;
     brdfData = data;
@@ -97,7 +98,11 @@ void BRDFMeasuredMERL::setName(string n)
 
 BRDFMeasuredMERL::~BRDFMeasuredMERL()
 {
+
+
+
     delete[] brdfData;
+
     glBindBuffer(GL_TEXTURE_BUFFER_EXT, tbo);
     glDeleteBuffers(1, &tbo);
 }
@@ -558,7 +563,7 @@ void BRDFMeasuredMERL::UnmapBRDF(double* CosineMap, float* mappedData, bool* Mas
         else
             brdfData[i * 3 + 0] = brdfData[i * 3 + 1] = brdfData[i * 3 + 2] = -1.0;
 
-    delete[] mappedData;
+
 }
 
 void BRDFMeasuredMERL::ProjectToPCSpace(float* data, float* PCs, float* relativeOffset, int Qsize)
@@ -657,6 +662,9 @@ void BRDFMeasuredMERL::reset(int numBRDFsam, const char* filename)
     UnmapBRDF(brdfParam->CosineMap, data, brdfParam->MaskMap, brdfParam->median, brdfParam->mask_size);
 
     reshapeFinal();
+
+    delete [] data;
+    delete [] xnew;
 }
 
 double BRDFMeasuredMERL::dot(float* x, double* a, double* N)
@@ -953,6 +961,8 @@ float* BRDFMeasuredMERL::ProjectToPCSpaceShort()
             data[i * 3 + j] = recon(i, j) + brdfParam->RelativeOffset[i];
 
     delete[] xnew;
+    delete[] betas;
+    delete[] Theta;
 
     return data;
 }
@@ -972,6 +982,9 @@ void BRDFMeasuredMERL::projectShort(int numBRDFsam, const char* filename)
     UnmapBRDF(brdfParam->CosineMap, reshapedBRDF, brdfParam->MaskMap, brdfParam->median, brdfParam->mask_size);
 
     reshapeFinal();
+
+    delete [] reshapedBRDF;
+
 }
 
 void BRDFMeasuredMERL::project(const char* filename)
@@ -1034,4 +1047,6 @@ void BRDFMeasuredMERL::project(const char* filename)
     UnmapBRDF(CosineMap, reshapedBRDF, MaskMap, median, mask_size);
 
     reshapeFinal();
+
+    delete [] reshapedBRDF;
 }

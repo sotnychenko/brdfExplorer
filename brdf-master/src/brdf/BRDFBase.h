@@ -54,7 +54,7 @@ infringement.
 #include <Eigen/Sparse>
 #include "cnpy.h"
 #include "qcustomplot.h"
-
+#include<iostream>
 #include<vector>
 
 using namespace Eigen;
@@ -130,6 +130,16 @@ struct brdfMERLparam
    bool verOfColorSpace;
    std::vector<path> paths;
    
+    ~brdfMERLparam(){
+
+       delete [] xold;
+       delete [] MaskMap;
+       delete [] median;
+       delete [] CosineMap;
+       delete [] RelativeOffset;
+       delete [] attrValues;
+
+   } //look ma!deletes!
 };
 
 
@@ -218,6 +228,7 @@ public:
     bool wasProjected;
     int numBRDFSamples;
     brdfMERLparam* brdfParam;
+
 protected:
 
     virtual void addFloatParameter( std::string name, float min, float max, float value );

@@ -233,6 +233,7 @@ ParameterGroupWidget::~ParameterGroupWidget()
 void ParameterGroupWidget::buttonResetPushed()
 
 {
+    if( brdf->brdfParam==NULL) return;
 
     BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
 
@@ -241,10 +242,8 @@ void ParameterGroupWidget::buttonResetPushed()
     brdf->wasProjected = false;
     updateAttrSliders(mb->brdfParam);
 
-    delete brdf;
+
     brdf = mb;
-    brdf->numBRDFSamples = mb->numBRDFSamples;
-    brdf->brdfParam = mb->brdfParam;
     brdf->wasProjected = true;
 
     for (int i = 0; i < brdf->brdfParam->paths.size(); i++)
@@ -330,7 +329,7 @@ BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
     if (visibleCheckBox && !visibleCheckBox->isChecked() && !isSoloing())
         return NULL;
 
-    if (dosomething == true) {
+    if (pcaCheckBox->isChecked()&&dosomething == true) {
 
         dosomething = false;
 
@@ -341,10 +340,8 @@ BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
         brdf->wasProjected = false;
         updateAttrSliders(mb->brdfParam);
 
-        delete brdf;
         brdf = mb;
-        brdf->numBRDFSamples = mb->numBRDFSamples;
-        brdf->brdfParam = mb->brdfParam;
+
         brdf->wasProjected = true;
     }
 
@@ -354,8 +351,8 @@ BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
         {
 
             std::cerr << brdf->getName().c_str() << std::endl;
-            brdf->brdfParam = new brdfMERLparam;
-            // brdf->brdfParam->verOfColorSpace =  colorSpaceBox->isChecked();
+            brdf->brdfParam=new brdfMERLparam;
+
             addAttributeWidgets();
 
             BRDFMeasuredMERL* mb = new BRDFMeasuredMERL;
@@ -364,10 +361,7 @@ BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
 
             updateAttrSliders(mb->brdfParam);
 
-            delete brdf;
             brdf = mb;
-            brdf->numBRDFSamples = mb->numBRDFSamples;
-            brdf->brdfParam = mb->brdfParam;
 
             brdf->wasProjected = true;
         }
@@ -420,7 +414,11 @@ void ParameterGroupWidget::resetButtonPushed()
 void ParameterGroupWidget::attrChanged(float v, int id)
 {
     if (!brdf->wasProjected)
+
         return;
+
+
+
     dosomething = true;
     brdf->brdfParam->newAttrVal = v;
     brdf->brdfParam->idOfVal = id;

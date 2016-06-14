@@ -93,6 +93,7 @@ BRDFBase::BRDFBase() : initializedGL(false)
 
     shaders[SHADER_IBL].vertexShaderFilename                 = templateDir + "brdfIBL.vert";
     shaders[SHADER_IBL].fragmentShaderFilename               = templateDir + "brdfIBL.frag";
+    brdfParam= NULL;
 }
 
 
@@ -104,6 +105,8 @@ BRDFBase::~BRDFBase()
         if( shaders[i].shader )
             delete shaders[i].shader;
     }
+
+    delete brdfParam;
 }
 
 

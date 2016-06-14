@@ -15,6 +15,8 @@ using orgQhull::QhullFacetList;
 
 using namespace Eigen;
 using namespace std;
+
+
 class BRDFMeasuredMERL : public BRDFBase {
 public:
     BRDFMeasuredMERL();
@@ -22,9 +24,6 @@ public:
     void project(const char* filename);
     void projectShort(int numBRDFsam, const char* filename);
     bool loadMERLData(const char* filename);
-
-    brdfMERLparam* brdfParam;
-    int numBRDFSamples;
 
     virtual ~BRDFMeasuredMERL();
 
@@ -88,7 +87,7 @@ private:
         char* cu, int* lencu,
         int iu[], int* leniu,
         double ru[], int* lenru);
-    void minimzer();
+
 
     float* brdfData;
     GLuint tbo;
