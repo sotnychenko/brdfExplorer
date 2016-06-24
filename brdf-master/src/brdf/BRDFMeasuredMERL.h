@@ -7,7 +7,7 @@
 #include <GL/glut.h>
 #include <Eigen/Sparse>
 #include "BRDFBase.h"
-#include "projectToPCA.h"
+
 
 #include "libqhullcpp/QhullFacetList.h"
 

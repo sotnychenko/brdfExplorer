@@ -22,7 +22,6 @@ TARGET = brdf
 target.path = $$DEST/bin
 
 HEADERS = *.h \
-    projectToPCA.h \
     redsvd.hpp \
     redsvdFile.hpp \
     redsvdIncr.hpp \
@@ -78,7 +77,6 @@ SOURCES = \
     ptex/PtexUtils.cpp \
     ptex/PtexCache.cpp \
     ptex/PtexHalf.cpp \
-    projectToPCA.cpp \
     cnpy.cpp \
     redsvdFile.cpp \
     util.cpp \

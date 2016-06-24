@@ -12,7 +12,6 @@
 #include "DGLShader.h"
 #include "Paths.h"
 #include "BRDFBase.h"
-#include "projectToPCA.h"
 #include "cnpy.h"
 #include "redsvd.hpp"
 #include "redsvdFile.hpp"
