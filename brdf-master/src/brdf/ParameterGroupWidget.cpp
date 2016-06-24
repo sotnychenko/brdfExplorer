@@ -55,7 +55,6 @@ infringement.
 #include "ParameterWindow.h"
 #include "Paths.h"
 #include "BRDFMeasuredMERL.h"
-#include "projectToPCA.h"
 #include "cnpy.h"
 
 using namespace std;
@@ -405,6 +404,7 @@ BRDFBase* ParameterGroupWidget::getUpdatedBRDF()
 void ParameterGroupWidget::reloadButtonPushed()
 {
     reload(false);
+    cout<<"reload pushed"<<endl;
 }
 
 void ParameterGroupWidget::resetButtonPushed()
@@ -438,6 +438,14 @@ void ParameterGroupWidget::reload(bool resetToDefaults)
     while ((child = containerLayout->takeAt(1)) != 0) {
         child->widget()->deleteLater();
         delete child;
+    }
+    if(brdf->wasProjected){
+
+    int offset = this->layout()->count() - brdf->brdfParam->npzFiles.size();
+    for (int i = 0; i < brdf->brdfParam->npzFiles.size(); i++) {
+       this->layout()->itemAt(i + offset)->widget()->deleteLater();
+
+    }
     }
     brdfParamWidgets.clear();
 
