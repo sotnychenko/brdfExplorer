@@ -712,7 +712,7 @@ bool BRDFMeasuredMERL::inhull(float* x, QhullFacetList& qlist, double tol)
 
 void BRDFMeasuredMERL::gradientDescend(float* xnew, float& ynew, float yobj, float* betas, float* Theta, Eigen::Matrix<float, Dynamic, Dynamic, RowMajor>& Centers, QhullFacetList qlist, float tol)
 {
-    // float bar;
+
     float alpha = 0.01;
     float* grad = new float[Centers.rows()];
 
@@ -772,8 +772,7 @@ void BRDFMeasuredMERL::gradientDescendLogB(float* xnew, float& ynew, float yobj,
     brdfParam->xold[2] = xnew[2];
     brdfParam->xold[3] = xnew[3];
     brdfParam->xold[4] = xnew[4];
-    //float yold=ynew;
-    // float direction = ynew - yobj;
+
     while (abs(ynew - yobj) > EPS || mu > EPS) {
 
         bar = evaluateBarLog(xnew, qlist, tol);
@@ -806,18 +805,6 @@ void BRDFMeasuredMERL::gradientDescendLogB(float* xnew, float& ynew, float yobj,
 
         ynew = evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew) - mu * bar;
 
-        /* if(sgn(direction)!=sgn(yold-ynew))
-
-        {
-            xnew[0] =brdfParam->xold[0];
-            xnew[1] = brdfParam->xold[1];
-            xnew[2] =brdfParam->xold[2];
-            xnew[3] = brdfParam->xold[3];
-            xnew[4] = brdfParam->xold[4];
-
-            break;
-        }*/
-        // ynew-=mu*bar;
 
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).push_back(xnew[0]);
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(1).push_back(xnew[1]);
@@ -826,37 +813,17 @@ void BRDFMeasuredMERL::gradientDescendLogB(float* xnew, float& ynew, float yobj,
         brdfParam->paths.at(brdfParam->idOfVal).alpha.at(4).push_back(xnew[4]);
 
         mu *= mult;
-        // cout<<"ln(c(x))="<<bar<<endl;
-
-        // if(!inhull(xnew,qlist,tol)){brdfParam->newAttrVal = ynew; cout<<"not in hull"<<endl; break; }
     }
     if (!inhull(xnew, qlist, tol)) {
-        //     cout<<"not in hull"<<endl;
-        //     brdfParam->wasNotInHull = true;
         xnew[0] = brdfParam->xold[0];
         xnew[1] = brdfParam->xold[1];
         xnew[2] = brdfParam->xold[2];
         xnew[3] = brdfParam->xold[3];
         xnew[4] = brdfParam->xold[4];
-        /* int pathSize = brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).size();
-          xnew[0]=  brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
-          xnew[1]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
-          xnew[2]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
-          xnew[3]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);
-          xnew[4]= brdfParam->paths.at(brdfParam->idOfVal).alpha.at(0).at(pathSize-2);*/
     }
 
-    if (inhull(xnew, qlist, tol))
-        cout << "now in hull!" << endl;
 
     ynew = evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
-
-    // cout<<"finished"<<endl;
-    //  cout<<xnew[0]<<";"<<xnew[1]<<";"<<xnew[2]<<";"<<xnew[3]<<";"<<xnew[4]<<";"<<endl;
-
-    // ynew =  evaluateFuncApproxRBFN(Centers, betas, Theta, true, xnew);
-
-    //brdfParam->newAttrVal = ynew;
 
     delete[] grad;
 }
