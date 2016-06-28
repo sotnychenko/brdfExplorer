@@ -1,0 +1,81 @@
+\documentclass{article}
+\usepackage{hyperref}
+\title{Interactive BRDF editing}
+
+\date{\today}
+% Hint: \title{what ever}, \author{who care} and \date{when ever} could stand 
+% before or after the \begin{document} command 
+% BUT the \maketitle command MUST come AFTER the \begin{document} command! 
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+The documentation of  the interactive BRDF editing software \cite{git}.The software was built on top the existed software BRDF Explorer \cite{brdfExplorer}.
+\end{abstract}
+
+
+\section{Introduction}
+The project was built in the Qt Creator (version 3.2.0) \cite{qtCreator} with Qt version 4.8.6. \cite{qtVer}
+\section{How To Built} \label{built}
+To build the project in Qt Creator one would need to use the project file "brdf.pro". All the additional dependencies needed to built the project are already present in the folder "dependencies" \cite{git}.
+
+\begin{flushleft} 
+
+To run the program, one would need aditional files needed for PCA, i.e. "CosineMap.npy", "hull.npz", "Median.npy", "Q.npy",  "RelativeOffset.npy" and the folder "trained\_RBFN\_npz", with for instance such attributes as $"RBFN\_att\_01\_Name\_nameOfTheAttribute\_N\_010\_sigma\_010\_10-Jan-2016.npz".$
+The "nameOfTheAttribute" is parsed from the name of the name of the attribute file and will be used as a name for an attribute slider. One can delete or add an attribute slider by simplying adding or modifing that folder, i.e. "trained\_RBFN\_npz".
+\end{flushleft}
+
+\begin{flushleft} 
+All the ".npy" and ".npz" files are already present in the repository. These files are the products of the scripts written in Python. All the needed scripts are in the folder "py" of the repository \cite{git}.
+\end{flushleft}
+
+
+
+\section{Added and modified classes} \label{documentclasses}
+Added classes:
+
+
+\begin{itemize}
+\item PlotPCASlice2DWindow
+\item QCustomPlot \cite{qCustomPlot}
+\item libqhullcpp \cite{qhull}
+\item REDSVD \cite{redsvd}
+\end{itemize}
+
+\begin{flushleft} Modified classes:\end{flushleft}
+
+\begin{itemize}
+\item BRDFBase
+\item BRDFMeasuredMERL 
+\item FloatVarWidget
+\item MainWindow
+\item ParameterGroupWidget
+\end{itemize}
+
+
+\begin{description}
+\item[PlotPCASlice2DWindow\label{PlotPCASlice2DWindow}]{ is a Qt widget, which supports the visualization of a 2-D PCA slice.}
+\item[BRDFBase\label{BRDFBase}]{ added the brdfMERLparam structure, which stores all parameters for an edited BRDF.  }
+\item[BRDFMeasuredMERL\label{BRDFMeasuredMERL}]{ added all the necessary computations for modifying a BRDF. A gradient descent is implemented and gradient descent with a Log barrier function. A gradient descend operates at the start, on the set of five PCA components of the input BRDF. Gradient descend iterates in steps until the desired attribute value is reached or it hits the convex hull. Then, a  gradient descend with a Log barrier function continues where the gradient descend stopped.  These steps are repeated until  the  the convergence. }
+\item[FloatVarWidget\label{FloatVarWidget}]{modification were made in order to use sliders to edit  a BRDF. }
+\item[MainWindow\label{MainWindow}]{added a  PlotPCASlice2DWindow widget to the main window of the software. }
+\item[ParameterGroupWidget\label{ParameterGroupWidget}]{added  the following buttons: saveBRDF, ProjectToPCA and buttonReset. Also, responsible for the functionality of the attribute sliders.}
+
+
+\end{description}
+
+\begin{thebibliography}{9}
+\bibitem[1]{brdfExplorer} \emph{BRDF Explorer} - is an application that allows the development and analysis of BRDFs. \url{http://www.disneyanimation.com/technology/brdf.html} 
+\bibitem[2]{qCustomPlot} \emph{qCustomPlot} - is a Qt  widget for plotting and data visualization. \url{http://qcustomplot.com} 
+\bibitem[3]{qhull} \emph{Qhull} - is a library, which computes a convex hull. \url{http://qhull.org} 
+\bibitem[4]{redsvd} \emph{REDSVD} - is a library for PCA. \url{https://code.google.com/archive/p/redsvd/}
+\bibitem[5]{git} \emph{Source code}  of the software. \url{https://github.com/sotnychenko/brdfExplorer}
+\bibitem[6]{qtCreator} \emph{Qt Creator}  a development environment. \url{https://download.qt.io/official_releases/qtcreator/3.2/3.2.0/}
+\bibitem[7]{qtVer} \emph{Qt version}. \url{https://download.qt.io/archive/qt/4.8/4.8.6/}
+
+
+\end{thebibliography}
+
+\end{document}
