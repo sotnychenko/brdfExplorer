@@ -31,6 +31,7 @@ public:
     static MatrixXf rgb2Lab(MatrixXf proj);
     void reset(int numBRDFsam, const char* filename);
     float* getBRDFData();
+    void deleteBRDFData() {delete [] brdfData;  brdfData = NULL;}
 
 protected:
     virtual void initGL();

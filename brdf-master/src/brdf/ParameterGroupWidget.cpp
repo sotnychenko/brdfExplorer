@@ -417,8 +417,6 @@ void ParameterGroupWidget::attrChanged(float v, int id)
 
         return;
 
-
-
     dosomething = true;
     brdf->brdfParam->newAttrVal = v;
     brdf->brdfParam->idOfVal = id;

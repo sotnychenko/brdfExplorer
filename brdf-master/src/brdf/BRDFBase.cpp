@@ -575,12 +575,16 @@ void BRDFBase::saveBRDF( const char* filename )
         return;
 
 
+    this->wasProjected = false;
 
-    BRDFMeasuredMERL mb;
 
-    mb.brdfParam=this->brdfParam;
-    mb.projectShort( this->numBRDFSamples,this->getName().c_str());
-    float *data = mb.getBRDFData();
+    BRDFMeasuredMERL *mb = new BRDFMeasuredMERL;
+
+    mb->brdfParam= this->brdfParam;
+    mb->projectShort( this->numBRDFSamples,this->getName().c_str());
+
+    float *data = mb->getBRDFData();
+
 
     double* doubleArray = new double[3*this->numBRDFSamples];
     for (int i = 0 ; i < 3*this->numBRDFSamples; i++)
@@ -595,11 +599,10 @@ void BRDFBase::saveBRDF( const char* filename )
     fwrite(doubleArray,sizeof(double),3*this->numBRDFSamples,out);
 
 
+    this->wasProjected = true;
 
     delete [] doubleArray;
-
-
-
+    mb ->deleteBRDFData();
 
     fclose( out );
 }

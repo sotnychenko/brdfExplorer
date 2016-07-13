@@ -98,8 +98,6 @@ void BRDFMeasuredMERL::setName(string n)
 BRDFMeasuredMERL::~BRDFMeasuredMERL()
 {
 
-
-
     delete[] brdfData;
 
     glBindBuffer(GL_TEXTURE_BUFFER_EXT, tbo);

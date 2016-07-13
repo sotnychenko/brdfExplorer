@@ -130,6 +130,8 @@ struct brdfMERLparam
    bool verOfColorSpace;
    std::vector<path> paths;
    
+
+
     ~brdfMERLparam(){
 
        delete [] xold;
@@ -139,7 +141,7 @@ struct brdfMERLparam
        delete [] RelativeOffset;
        delete [] attrValues;
 
-   } //look ma!deletes!
+   }
 };
 
 
